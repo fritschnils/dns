@@ -16,53 +16,57 @@ void raler(char *msg, int perror_isset)
 	exit(EXIT_FAILURE);
 }
 
-
 int main(int argc, char const *argv[])
 {
-	int sockfd_serveur, sockfd_client, ip_bin, nb_octets;
-	long int port_serveur = 50764, port_client = 40764;
-	char *ip_client = "127.0.0.1"; 
+	int sockfd, ip_bin;
+	ssize_t nb_octets;
+	long int port_envoi = 50764, port_reception = 40764;
 	char *sent_request = "salut";
 	char buf[1024];
 
 	socklen_t addrlen;
-	struct sockaddr_in client;
-	struct sockaddr_in dest;
+	struct sockaddr_in my_addr;
 
-	// SOCKET CLIENT 
-	if((sockfd_client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+
+	// SOCKET ENVOI INITIALISATION --------------------------------------------
+	if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		raler("socket", 1);
-
-	client.sin_family = AF_INET;
-	client.sin_port = htons(port_client);
-	client.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	addrlen = sizeof(struct sockaddr_in);
-	memset(buf, '\0', 1024);
-	if((bind(sockfd_client, (struct sockaddr *) &client, addrlen)) == -1)
-		raler("bind", 1);
-
-	// SOCKET SERVEUR
-	if((sockfd_serveur = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		raler("socket", 1);
-
-	dest.sin_family = AF_INET;
-	dest.sin_port = htons(port_serveur);
-	ip_bin = inet_pton(AF_INET, ip_client, &dest.sin_addr);
+	my_addr.sin_family = AF_INET;
+	my_addr.sin_port = htons(port_envoi);
+	ip_bin = inet_pton(AF_INET, "127.0.0.1", &my_addr.sin_addr);
 	if(ip_bin == 0)
 		raler("inet_pton : src does not contain a character string representing a valid network address in the specified address family", 0);
 	if(ip_bin == -1)
 		raler("inet_pton", 1);
 
-	if(sendto(sockfd_serveur, sent_request, strlen(sent_request), 0, (struct sockaddr *) &dest, addrlen) == -1)
+	// ENVOI PUIS FERMETURE SOCKET --------------------------------------------
+	if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
 		raler("sendto", 1);
 
-	if((nb_octets = recvfrom(sockfd_client, buf, 1024, 0, (struct sockaddr *) &dest, &addrlen)) == -1)
+	if((close(sockfd)) == -1)
+		raler("close", 1);
+
+	// SOCKET RECEPTION INITIALISATION ----------------------------------------
+	if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+		raler("socket", 1);
+
+	my_addr.sin_family = AF_INET;
+	my_addr.sin_port = htons(port_reception);
+	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	memset(buf, '\0', 1024);
+	if((bind(sockfd, (struct sockaddr *) &my_addr, addrlen)) == -1)
+		raler("bind2", 1);
+
+	// RECEPTION AFFICHAGE FERMETURE -- ---------------------------------------
+	if((nb_octets = recvfrom(sockfd, buf, 1024, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
 		raler("recvfrom", 1);
 
-	printf("msg recu : %s", buf);
+	printf("message recu : %s\n", buf);
 
-	if((close(sockfd_serveur)) == -1)
+	if((close(sockfd)) == -1)
 		raler("close", 1);
 
 	return 0;
