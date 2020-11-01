@@ -16,6 +16,22 @@ void raler(char *msg, int perror_isset)
 	exit(EXIT_FAILURE);
 }
 
+int init_socket_reception(struct sockaddr_in *address, long int port, int addrlen)
+{	
+	int sockfd = -1;
+	if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+		raler("socket", 1);
+
+	address->sin_family = AF_INET;
+	address->sin_port = htons(port);
+	address->sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if((bind(sockfd, (struct sockaddr *) address, addrlen)) == -1)
+		raler("bind", 1);
+
+	return sockfd;
+}
+
 int main(int argc, char const *argv[])
 {
 	int sockfd, aff_port, ip_bin;
@@ -24,23 +40,23 @@ int main(int argc, char const *argv[])
 	char buf[1024], addr_to_print[INET6_ADDRSTRLEN];
 	char *sent_request = "bien recu";
 	
-	socklen_t addrlen;
+	socklen_t addrlen = sizeof(struct sockaddr_in);
 	struct sockaddr_in my_addr;
 
 	fd_set ens_read;
 
 	// SOCKET RECEPTION INITIALISATION ----------------------------------------
-	if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+	/*if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		raler("socket", 1);
 
 	my_addr.sin_family = AF_INET;
 	my_addr.sin_port = htons(port_reception);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	addrlen = sizeof(struct sockaddr_in);
+	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);*/
+	sockfd = init_socket_reception(&my_addr, port_reception, addrlen);
+	
+	/*if((bind(sockfd, (struct sockaddr *) &my_addr, addrlen)) == -1)
+		raler("bind", 1);*/
 	memset(buf, '\0', 1024);
-	if((bind(sockfd, (struct sockaddr *) &my_addr, addrlen)) == -1)
-		raler("bind", 1);
 
 	// RECEPTION AFFICHAGE FERMETURE ------------------------------------------
 	FD_ZERO(&ens_read);	
