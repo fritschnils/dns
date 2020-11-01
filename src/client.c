@@ -36,7 +36,7 @@ int main(int argc, char const *argv[])
 {
 	int sockfd, ip_bin;
 	ssize_t nb_octets;
-	long int port_envoi = 50764, port_reception = 40764;
+	long int port_envoi = 50000, port_reception = 40764;
 	char *sent_request = "salut";
 	char buf[1024];
 
@@ -45,45 +45,48 @@ int main(int argc, char const *argv[])
 
 
 	// SOCKET ENVOI INITIALISATION --------------------------------------------
-	if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		raler("socket", 1);
+	while(port_envoi < 50003){	
+		if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+			raler("socket", 1);
 
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(port_envoi);
-	ip_bin = inet_pton(AF_INET, "127.0.0.1", &my_addr.sin_addr);
-	if(ip_bin == 0)
-		raler("inet_pton : src does not contain a character string representing a valid network address in the specified address family", 0);
-	if(ip_bin == -1)
-		raler("inet_pton", 1);
+		my_addr.sin_family = AF_INET;
+		my_addr.sin_port = htons(port_envoi);
+		ip_bin = inet_pton(AF_INET, "127.0.0.1", &my_addr.sin_addr);
+		if(ip_bin == 0)
+			raler("inet_pton : src does not contain a character string representing a valid network address in the specified address family", 0);
+		if(ip_bin == -1)
+			raler("inet_pton", 1);
 
-	// ENVOI PUIS FERMETURE SOCKET --------------------------------------------
-	if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
-		raler("sendto", 1);
+		// ENVOI PUIS FERMETURE SOCKET --------------------------------------------
+		if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
+			raler("sendto", 1);
 
-	if((close(sockfd)) == -1)
-		raler("close", 1);
+		if((close(sockfd)) == -1)
+			raler("close", 1);
 
-	// SOCKET RECEPTION INITIALISATION ----------------------------------------
-	/*if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		raler("socket", 1);
+		// SOCKET RECEPTION INITIALISATION ----------------------------------------
+		/*if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+			raler("socket", 1);
 
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(port_reception);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		my_addr.sin_family = AF_INET;
+		my_addr.sin_port = htons(port_reception);
+		my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if((bind(sockfd, (struct sockaddr *) &my_addr, addrlen)) == -1)
-		raler("bind2", 1);
-	*/
-	sockfd = init_socket_reception(&my_addr, port_reception, addrlen);
-	memset(buf, '\0', 1024);
-	// RECEPTION AFFICHAGE FERMETURE -- ---------------------------------------
-	if((nb_octets = recvfrom(sockfd, buf, 1024, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
-		raler("recvfrom", 1);
+		if((bind(sockfd, (struct sockaddr *) &my_addr, addrlen)) == -1)
+			raler("bind2", 1);
+		*/
+		sockfd = init_socket_reception(&my_addr, port_reception, addrlen);
+		memset(buf, '\0', 1024);
+		// RECEPTION AFFICHAGE FERMETURE -- ---------------------------------------
+		if((nb_octets = recvfrom(sockfd, buf, 1024, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
+			raler("recvfrom", 1);
 
-	printf("message recu : %s\n", buf);
+		printf("message recu : %s\n", buf);
 
-	if((close(sockfd)) == -1)
-		raler("close", 1);
+		if((close(sockfd)) == -1)
+			raler("close", 1);
+		port_envoi++;
+	}
 
 	return 0;
 }

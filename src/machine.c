@@ -36,9 +36,9 @@ int main(int argc, char const *argv[])
 {
 	int sockfd, aff_port, ip_bin;
 	ssize_t nb_octets;
-	long int port_envoi = 40764, port_reception = 50000;
+	long int port_envoi = 40764, port_reception = 50002;
 	char buf[1024], addr_to_print[INET6_ADDRSTRLEN];
-	char *sent_request = "domaine, recu";
+	char *sent_request = "machine, recu";
 	
 	socklen_t addrlen = sizeof(struct sockaddr_in);
 	struct sockaddr_in my_addr;
