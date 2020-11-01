@@ -32,12 +32,29 @@ int init_socket_reception(struct sockaddr_in *address, long int port, int addrle
 	return sockfd;
 }
 
+int init_socket_envoi(struct sockaddr_in *address, long int port)
+{
+	int sockfd, ip_bin;
+	if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+		raler("socket", 1);
+
+	address->sin_family = AF_INET;
+	address->sin_port = htons(port);
+	ip_bin = inet_pton(AF_INET, "127.0.0.1", &address->sin_addr);
+	if(ip_bin == 0)
+		raler("inet_pton : src does not contain a character string representing a valid network address in the specified address family", 0);
+	if(ip_bin == -1)
+		raler("inet_pton", 1);
+
+	return sockfd;
+}
+
 int main(int argc, char const *argv[])
 {
-	int sockfd, aff_port, ip_bin;
+	int sockfd;
 	ssize_t nb_octets;
 	long int port_envoi = 40764, port_reception = 50000;
-	char buf[1024], addr_to_print[INET6_ADDRSTRLEN];
+	char buf[1024];
 	char *sent_request = "domaine, recu";
 	
 	socklen_t addrlen = sizeof(struct sockaddr_in);
@@ -46,18 +63,8 @@ int main(int argc, char const *argv[])
 	fd_set ens_read;
 
 	// SOCKET RECEPTION INITIALISATION ----------------------------------------
-	/*if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		raler("socket", 1);
-
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(port_reception);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);*/
 	sockfd = init_socket_reception(&my_addr, port_reception, addrlen);
 	
-	/*if((bind(sockfd, (struct sockaddr *) &my_addr, addrlen)) == -1)
-		raler("bind", 1);*/
-	memset(buf, '\0', 1024);
-
 	// RECEPTION AFFICHAGE FERMETURE ------------------------------------------
 	FD_ZERO(&ens_read);	
 	FD_SET(sockfd, &ens_read);
@@ -65,33 +72,24 @@ int main(int argc, char const *argv[])
 		raler("select", 1);
 
 	if(FD_ISSET(sockfd, &ens_read)){
+		memset(buf, '\0', 1024);
 		if((nb_octets = recvfrom(sockfd, buf, 1024, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
 			raler("recvfrom", 1);
-
-		if(inet_ntop(AF_INET, &my_addr.sin_addr.s_addr,addr_to_print, INET6_ADDRSTRLEN) == NULL)
-			raler("inet_ntop", 1);
-		aff_port = ntohs(my_addr.sin_port);
-		printf("message reçu : %s\noctets reçus : %ld\nadresse expéditeur : %s\nport expéditeur : %d\n", buf, nb_octets, addr_to_print, aff_port);
 
 		if((close(sockfd)) == -1)
 			raler("close", 1);
 
 		// SOCKET ENVOI INITIALISATION ----------------------------------------
-		if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-			raler("socket", 1);
-
-		my_addr.sin_family = AF_INET;
-		my_addr.sin_port = htons(port_envoi);
-		ip_bin = inet_pton(AF_INET, "127.0.0.1", &my_addr.sin_addr);
-		if(ip_bin == 0)
-			raler("inet_pton : src does not contain a character string representing a valid network address in the specified address family", 0);
-		if(ip_bin == -1)
-			raler("inet_pton", 1);
+		sockfd = init_socket_envoi(&my_addr, port_envoi);
 
 		// ENVOI PUIS FERMETURE SOCKET ----------------------------------------
-		if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
-			raler("sendto", 1);
-
+		if(nb_octets > 0){
+			if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
+				raler("sendto", 1);
+		}
+		else
+			printf("ecoute domaine : echec reception\n");	
+		
 		if((close(sockfd)) == -1)
 			raler("close", 1);
 	}
