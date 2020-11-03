@@ -15,39 +15,40 @@ int main(int argc, char const *argv[])
 {
 	int sockfd;
 	ssize_t nb_octets;
-	long int port_envoi = 50000, port_reception = 40764;
+	long int port_reception = 40764;
 	char *sent_request = "salut";
-	char buf[1024];
+	char buf[BUFFSIZE];
 
 	socklen_t addrlen = sizeof(struct sockaddr_in);
-	struct sockaddr_in my_addr;
+	struct sockaddr_in my_addr, address;
 
+	for(int i = 0; i < 3; i++){
+		// Initialisation - Envoi - Fermeture ---------------------------------
+		if(i == 0)
+			sockfd = init_socket(&address, 50000, DOMAINE_ADDR, addrlen, 0);
+		else if(i == 1)
+			sockfd = init_socket(&address, 50001, SOUSDOMAINE_ADDR, addrlen, 0);
+		else
+			sockfd = init_socket(&address, 50002, MACHINE_ADDR, addrlen, 0);
 
-	// SOCKET ENVOI INITIALISATION --------------------------------------------
-	while(port_envoi < 50003){	
-
-		sockfd = init_socket_envoi(&my_addr, port_envoi);
-
-
-		// ENVOI PUIS FERMETURE SOCKET --------------------------------------------
-		if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
+		if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &address, addrlen) == -1)
 			raler("sendto", 1);
 
 		if((close(sockfd)) == -1)
 			raler("close", 1);
 
-		// SOCKET RECEPTION INITIALISATION ----------------------------------------
-		sockfd = init_socket_reception(&my_addr, port_reception, addrlen);
-		memset(buf, '\0', 1024);
-		// RECEPTION AFFICHAGE FERMETURE -- ---------------------------------------
-		if((nb_octets = recvfrom(sockfd, buf, 1024, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
+		// Initialisation - Reception/Affichage - Fermeture -------------------
+		sockfd = init_socket(&my_addr, port_reception, CLIENT_ADDR, addrlen, 1);
+
+		memset(buf, '\0', BUFFSIZE);
+
+		if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
 			raler("recvfrom", 1);
 
 		printf("message recu : %s\n", buf);
 
 		if((close(sockfd)) == -1)
 			raler("close", 1);
-		port_envoi++;
 	}
 
 	return 0;

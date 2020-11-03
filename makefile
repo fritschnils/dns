@@ -1,4 +1,5 @@
 programme: 
+	make clean
 	mkdir bin
 	gcc -Wall -Wextra -o bin/client src/client.c src/fct_serveur.c
 	gcc -Wall -Wextra -o bin/domaine src/domaine.c src/fct_serveur.c

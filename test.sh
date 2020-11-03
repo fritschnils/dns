@@ -1,11 +1,11 @@
-echo "lancement serveur domaine"
+echo "bash $ lancement serveur domaine"
 gnome-terminal -- ./bin/domaine
-#sleep 1
-echo "lancement serveur sous_domaine"
+#sleep 0.5
+echo "bash $ lancement serveur sous_domaine"
 gnome-terminal -- ./bin/sous_domaine
-#sleep 1
-echo "lancement serveur machine"
+#sleep 0.5
+echo "bash $ lancement serveur machine"
 gnome-terminal -- ./bin/machine
-#sleep 1
-echo "lancement client et envoi des requetes ..."
+sleep 0.1 # syncro des processus
+echo "bash $ lancement client et envoi des requetes ..."
 ./bin/client

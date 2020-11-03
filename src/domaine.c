@@ -16,37 +16,37 @@ int main(int argc, char const *argv[])
 	int sockfd;
 	ssize_t nb_octets;
 	long int port_envoi = 40764, port_reception = 50000;
-	char buf[1024];
+	char buf[BUFFSIZE];
 	char *sent_request = "domaine, recu";
 	
 	socklen_t addrlen = sizeof(struct sockaddr_in);
-	struct sockaddr_in my_addr;
+	struct sockaddr_in my_addr, client_addr;
 
 	fd_set ens_read;
 
-	// SOCKET RECEPTION INITIALISATION ----------------------------------------
-	sockfd = init_socket_reception(&my_addr, port_reception, addrlen);
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, port_reception, DOMAINE_ADDR, addrlen, 1);	
 	
-	// RECEPTION AFFICHAGE FERMETURE ------------------------------------------
 	FD_ZERO(&ens_read);	
 	FD_SET(sockfd, &ens_read);
 	if((select(sockfd+1, &ens_read, NULL, NULL, NULL)) == -1)
 		raler("select", 1);
 
 	if(FD_ISSET(sockfd, &ens_read)){
-		memset(buf, '\0', 1024);
-		if((nb_octets = recvfrom(sockfd, buf, 1024, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
+		memset(buf, '\0', BUFFSIZE);
+		if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, (struct sockaddr *) &client_addr, &addrlen)) == -1)
 			raler("recvfrom", 1);
+
+		printf("domaine - message recu : %s\n", buf);
 
 		if((close(sockfd)) == -1)
 			raler("close", 1);
 
-		// SOCKET ENVOI INITIALISATION ----------------------------------------
-		sockfd = init_socket_envoi(&my_addr, port_envoi);
+		// Initialisation - Envoi - Fermeture ---------------------------------
+		sockfd = init_socket(&client_addr, port_envoi, CLIENT_ADDR, addrlen, 0);
 
-		// ENVOI PUIS FERMETURE SOCKET ----------------------------------------
 		if(nb_octets > 0){
-			if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &my_addr, addrlen) == -1)
+			if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &client_addr, addrlen) == -1)
 				raler("sendto", 1);
 		}
 		else
