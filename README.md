@@ -1,7 +1,7 @@
-#Simulateur de DNS
+# Simulateur de DNS
 
 
-##Utilisation
+## Utilisation
 
 - préparer les aresses ip : 
 		sudo ip addr add 192.168.0.200/24 dev wlp3s0
