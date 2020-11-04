@@ -5,12 +5,13 @@
 
 - préparer les aresses ip : 
 ```console
-sudo ip addr add 192.168.0.200/24 dev wlp3s0
-sudo ip addr add 192.168.0.201/24 dev wlp3s0
-sudo ip addr add 192.168.0.202/24 dev wlp3s0
-sudo ip addr add 192.168.0.203/24 dev wlp3s0
+make init_ip
 ```
-
 - compilier avec commande : make 
-- lancer les serveurs avec : bash ./test.sh
+- lancer les serveurs avec : make test
 
+## Fonctionnalités
+
+**Utilisation généralisée d'adresses ipv4 et ipv6. Serveurs joignables en ipv4 et ipv6**
+Passage des structures sockaddr_in en sockaddr_in6, AF_INET en PF_INET6(création socket) et AF_INET6(address familiy)
+Passage des ipv4 de la forme X.X.X.X en ipv6 de la forme ::FFFF:X.X.X.X appelé *ipv4 mapped ipv6*

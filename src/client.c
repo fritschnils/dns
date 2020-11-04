@@ -19,8 +19,8 @@ int main(int argc, char const *argv[])
 	char *sent_request = "salut";
 	char buf[BUFFSIZE];
 
-	socklen_t addrlen = sizeof(struct sockaddr_in);
-	struct sockaddr_in my_addr, address;
+	socklen_t addrlen = sizeof(struct sockaddr_in6); //sockaddr_storage
+	struct sockaddr_in6 my_addr, address;
 
 	for(int i = 0; i < 3; i++){
 		// Initialisation - Envoi - Fermeture ---------------------------------

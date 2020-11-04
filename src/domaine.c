@@ -19,8 +19,8 @@ int main(int argc, char const *argv[])
 	char buf[BUFFSIZE];
 	char *sent_request = "domaine, recu";
 	
-	socklen_t addrlen = sizeof(struct sockaddr_in);
-	struct sockaddr_in my_addr, client_addr;
+	socklen_t addrlen = sizeof(struct sockaddr_in6);
+	struct sockaddr_in6 my_addr, client_addr;
 
 	fd_set ens_read;
 
