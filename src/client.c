@@ -14,10 +14,8 @@
 int main(int argc, char const *argv[])
 {
 	int sockfd;
-	ssize_t nb_octets;
 	long int port_reception = 40764;
 	char *sent_request = "salut";
-	char buf[BUFFSIZE];
 
 	socklen_t addrlen = sizeof(struct sockaddr_in6); //sockaddr_storage
 	struct sockaddr_in6 my_addr, address;
@@ -31,25 +29,11 @@ int main(int argc, char const *argv[])
 		else
 			sockfd = init_socket(&address, 50002, MACHINE_ADDR, addrlen, 0);
 
-		if(sendto(sockfd, sent_request, strlen(sent_request), 0, (struct sockaddr *) &address, addrlen) == -1)
-			raler("sendto", 1);
-
-		if((close(sockfd)) == -1)
-			raler("close", 1);
+		snd(sockfd, sent_request, &address);
 
 		// Initialisation - Reception/Affichage - Fermeture -------------------
 		sockfd = init_socket(&my_addr, port_reception, CLIENT_ADDR, addrlen, 1);
-
-		memset(buf, '\0', BUFFSIZE);
-
-		if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, (struct sockaddr *) &my_addr, &addrlen)) == -1)
-			raler("recvfrom", 1);
-
-		printf("message recu : %s\n", buf);
-
-		if((close(sockfd)) == -1)
-			raler("close", 1);
+		rcv(sockfd);
 	}
-
 	return 0;
 }

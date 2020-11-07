@@ -19,5 +19,9 @@ init_ip:
 	sudo ip addr add 2001::20 dev wlp3s0
 	sudo ip addr add 2001::21 dev wlp3s0
 
+	sudo ip addr add 192.168.0.210/24 dev wlp3s0 #processus domaine1
+	sudo ip addr add 192.168.0.211/24 dev wlp3s0 #processus domaine2
+	sudo ip addr add 192.168.0.212/24 dev wlp3s0 #processus domaine3
+
 test:
 	bash ./test.sh

@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <string.h>
 
+#define BUFFSIZE 1024
 
 void raler(char *msg, int perror_isset)
 {
@@ -47,3 +48,31 @@ int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_add
                  bits  of  the  address.   An   example   of   such   an   address   is
                  ::FFFF:204.152.189.116.
 */
+
+
+int rcv(int sockfd)
+{
+	char buf[BUFFSIZE];
+	int nb_octets;
+
+	memset(buf, '\0', BUFFSIZE);
+	if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, NULL, NULL)) == -1)
+		raler("recvfrom", 1);
+
+	printf("domaine - message recu : %s\n", buf);
+
+	if((close(sockfd)) == -1)
+		raler("close", 1);	
+	return 0;
+}
+
+int snd(int sockfd, const char *msg, struct sockaddr_in6 *client_addr)
+{
+	socklen_t addrlen = sizeof(struct sockaddr_in6);
+	if(sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *) client_addr, addrlen) == -1)
+			raler("sendto", 1);
+
+	if((close(sockfd)) == -1)
+		raler("close", 1);	
+	return 0;
+}
