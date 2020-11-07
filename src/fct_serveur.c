@@ -1,14 +1,6 @@
-#include <sys/types.h>	
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <limits.h>
-#include <string.h>
-
-#define BUFFSIZE 1024
+#ifndef FCT_SERVEUR_H
+#include "../include/fct_serveur.h"
+#endif
 
 void raler(char *msg, int perror_isset)
 {
@@ -40,16 +32,6 @@ int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_add
 	return sockfd;
 }
 
-/*              3. An   alternate  format  is  useful  for  expressing  IPv4-mapped  IPv6
-                 addresses.  This form is written as x:x:x:x:x:x:d.d.d.d, where the six
-                 leading xs are hexadecimal values that define the six most-significant
-                 16-bit pieces of the address (i.e., 96 bits), and  the  ds  express  a
-                 value in dotted-decimal notation that defines the least significant 32
-                 bits  of  the  address.   An   example   of   such   an   address   is
-                 ::FFFF:204.152.189.116.
-*/
-
-
 int rcv(int sockfd)
 {
 	char buf[BUFFSIZE];
@@ -59,7 +41,7 @@ int rcv(int sockfd)
 	if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, NULL, NULL)) == -1)
 		raler("recvfrom", 1);
 
-	printf("domaine - message recu : %s\n", buf);
+	printf("message recu : %s\n", buf);
 
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
@@ -75,4 +57,141 @@ int snd(int sockfd, const char *msg, struct sockaddr_in6 *client_addr)
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
 	return 0;
+}
+
+/******************************************************************************
+* FONCTIONS DOMAINE
+******************************************************************************/
+socklen_t addrlen = sizeof(struct sockaddr_in6);
+
+void domaine_fils1()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, DOMAINE1_PORT, DOMAINE1_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, DOMAINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+void domaine_fils2()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, DOMAINE2_PORT, DOMAINE2_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, DOMAINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+void domaine_fils3()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, DOMAINE3_PORT, DOMAINE3_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, DOMAINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+/******************************************************************************
+* FONCTIONS SOUS_DOMAINE
+******************************************************************************/
+void sousdomaine_fils1()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, SOUSDOMAINE1_PORT, SOUSDOMAINE1_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, SOUSDOMAINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+void sousdomaine_fils2()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, SOUSDOMAINE2_PORT, SOUSDOMAINE2_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, SOUSDOMAINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+void sousdomaine_fils3()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, SOUSDOMAINE3_PORT, SOUSDOMAINE3_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, SOUSDOMAINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+/******************************************************************************
+* FONCTIONS MACHINE
+******************************************************************************/
+void machine_fils1()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, MACHINE1_PORT, MACHINE1_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, MACHINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+void machine_fils2()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, MACHINE2_PORT, MACHINE2_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, MACHINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
+}
+
+void machine_fils3()
+{
+	int sockfd;
+	struct sockaddr_in6 my_addr, client_addr;
+
+	// Initialisation - Reception - Fermeture ---------------------------------
+	sockfd = init_socket(&my_addr, MACHINE3_PORT, MACHINE3_ADDR, addrlen, 1);	
+	rcv(sockfd);
+	// Initialisation - Envoi - Fermeture ---------------------------------
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	snd(sockfd, MACHINE_REQUEST, &client_addr);
+	exit(EXIT_SUCCESS);
 }

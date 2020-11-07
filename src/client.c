@@ -1,12 +1,3 @@
-#include <sys/types.h>	
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <limits.h>
-#include <string.h>
 #ifndef FCT_SERVEUR_H
 #include "../include/fct_serveur.h"
 #endif

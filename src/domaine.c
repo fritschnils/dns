@@ -1,60 +1,6 @@
-#include <sys/types.h>	
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <limits.h>
-#include <string.h>
-#include <sys/wait.h>
 #ifndef FCT_SERVEUR_H
 #include "../include/fct_serveur.h"
 #endif
-
-#define EXIT_FAILS 255
-char *sent_request = "domaine, recu";
-socklen_t addrlen = sizeof(struct sockaddr_in6);
-struct sockaddr_in6 my_addr, client_addr;
-
-void fils1()
-{
-	int sockfd;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, DOMAINE1_PORT, DOMAINE1_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, sent_request, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void fils2()
-{
-	int sockfd;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, DOMAINE2_PORT, DOMAINE2_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, sent_request, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void fils3()
-{
-	int sockfd;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, DOMAINE3_PORT, DOMAINE3_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, sent_request, &client_addr);
-	exit(EXIT_SUCCESS);
-}
 
 int main(int argc, char const *argv[])
 {
@@ -72,7 +18,7 @@ int main(int argc, char const *argv[])
 						raler("fork", 1);
 						break;
 					case 0 : 
-						fils1();
+						domaine_fils1();
 				}
 				break;
 
@@ -82,7 +28,7 @@ int main(int argc, char const *argv[])
 							raler("fork", 1);
 						break;
 					case 0 : 
-						fils2();
+						domaine_fils2();
 				}
 				break;
 
@@ -92,7 +38,7 @@ int main(int argc, char const *argv[])
 						raler("fork", 1);
 							break;
 					case 0 : 
-						fils3();
+						domaine_fils3();
 				}
 				break;
 		}
