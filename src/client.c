@@ -14,25 +14,34 @@
 int main(int argc, char const *argv[])
 {
 	int sockfd;
-	long int port_reception = 40764;
 	char *sent_request = "salut";
 
 	socklen_t addrlen = sizeof(struct sockaddr_in6); //sockaddr_storage
 	struct sockaddr_in6 my_addr, address;
 
-	for(int i = 0; i < 3; i++){
+	for(int i = 0; i < 5; i++){
 		// Initialisation - Envoi - Fermeture ---------------------------------
-		if(i == 0)
-			sockfd = init_socket(&address, 50000, DOMAINE_ADDR, addrlen, 0);
-		else if(i == 1)
-			sockfd = init_socket(&address, 50001, SOUSDOMAINE_ADDR, addrlen, 0);
-		else
-			sockfd = init_socket(&address, 50002, MACHINE_ADDR, addrlen, 0);
-
+		switch(i){
+			case 0:
+				sockfd = init_socket(&address, DOMAINE1_PORT, DOMAINE1_ADDR, addrlen, 0);
+				break;
+			case 1:
+				sockfd = init_socket(&address, DOMAINE2_PORT, DOMAINE2_ADDR, addrlen, 0);
+				break;
+			case 2:
+				sockfd = init_socket(&address, DOMAINE3_PORT, DOMAINE3_ADDR, addrlen, 0);
+				break;
+			case 3:
+				sockfd = init_socket(&address, SOUSDOMAINE_PORT, SOUSDOMAINE_ADDR, addrlen, 0);
+				break;
+			case 4:
+				sockfd = init_socket(&address, MACHINE_PORT, MACHINE_ADDR, addrlen, 0);
+				break;
+		}
 		snd(sockfd, sent_request, &address);
 
 		// Initialisation - Reception/Affichage - Fermeture -------------------
-		sockfd = init_socket(&my_addr, port_reception, CLIENT_ADDR, addrlen, 1);
+		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 1);
 		rcv(sockfd);
 	}
 	return 0;
