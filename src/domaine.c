@@ -17,7 +17,6 @@ char *sent_request = "domaine, recu";
 socklen_t addrlen = sizeof(struct sockaddr_in6);
 struct sockaddr_in6 my_addr, client_addr;
 
-
 void fils1()
 {
 	int sockfd;
@@ -56,9 +55,6 @@ void fils3()
 	snd(sockfd, sent_request, &client_addr);
 	exit(EXIT_SUCCESS);
 }
-
-
-
 
 int main(int argc, char const *argv[])
 {

@@ -11,17 +11,21 @@ clean:
 	rm -rf bin/
 
 init_ip:
-	sudo ip addr add 192.168.0.200/24 dev wlp3s0
-	sudo ip addr add 192.168.0.201/24 dev wlp3s0
-	sudo ip addr add 192.168.0.202/24 dev wlp3s0
-	sudo ip addr add 192.168.0.203/24 dev wlp3s0
+	sudo service network-manager restart
+	sleep 2
+	sudo ip -force addr add 192.168.0.200/24 dev wlp3s0 #processus client
 
-	sudo ip addr add 2001::20 dev wlp3s0
-	sudo ip addr add 2001::21 dev wlp3s0
+	sudo ip -force addr add 192.168.0.211/24 dev wlp3s0 #processus domaine1
+	sudo ip -force addr add 192.168.0.212/24 dev wlp3s0 #processus domaine2
+	sudo ip -force addr add 192.168.0.213/24 dev wlp3s0 #processus domaine3
 
-	sudo ip addr add 192.168.0.210/24 dev wlp3s0 #processus domaine1
-	sudo ip addr add 192.168.0.211/24 dev wlp3s0 #processus domaine2
-	sudo ip addr add 192.168.0.212/24 dev wlp3s0 #processus domaine3
+	sudo ip -force addr add 192.168.0.221/24 dev wlp3s0 #processus sous_domaine1
+	sudo ip -force addr add 192.168.0.222/24 dev wlp3s0 #processus sous_domaine2
+	sudo ip -force addr add 192.168.0.223/24 dev wlp3s0 #processus sous_domaine3
+
+	sudo ip -force addr add 192.168.0.231/24 dev wlp3s0 #processus machine1
+	sudo ip -force addr add 192.168.0.232/24 dev wlp3s0 #processus machine2
+	sudo ip -force addr add 192.168.0.233/24 dev wlp3s0 #processus machine3
 
 test:
 	bash ./test.sh
