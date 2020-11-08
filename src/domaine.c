@@ -4,7 +4,27 @@
 
 int main(int argc, char const *argv[])
 {
+	struct serveur sousdomaine[4]; 
+	
+	FILE* fichier = NULL;
+	if((fichier = fopen("./lists/inforacine", "r")) == NULL)
+		raler("fopen", 1);
 
+	servers_from_file(fichier, sousdomaine, 4);
+
+	if(fclose(fichier) != 0)
+		raler("fclose", 1);
+
+
+	for(int i = 0; i < 4; i++){
+		printf("sousdomaine%d :\nip = %s\nport = %d\nnom = %s\n", i, sousdomaine[i].ip, sousdomaine[i].port, sousdomaine[i].nom);
+	}
+
+
+
+
+
+/*
 	int reason;
 
 	for(int i=0;i<3;i++){
@@ -48,5 +68,6 @@ int main(int argc, char const *argv[])
 			raler("child terminated abnormally", 0);
 	}
 	exit(EXIT_SUCCESS);
+	*/
 	return 0;
 }

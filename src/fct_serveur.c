@@ -59,6 +59,50 @@ int snd(int sockfd, const char *msg, struct sockaddr_in6 *client_addr)
 	return 0;
 }
 
+/*
+ * Met dans <storage> la string (bien formée) reconnue jusqu'à avoir rencontré 'EOF' ou '|'' ou '\n'
+ * Return : le dernier char rencontré (= EOF ou '|' ou '\n') 
+ */
+int element_from_file(FILE *fichier, char* storage)
+{
+	int c, i = 0;
+	while(1){
+		c = fgetc(fichier);
+		if(c == EOF || c == '|' || c == '\n'){
+			storage[i] = '\0';
+			return c;
+		}
+		storage[i] = c;
+		i++;
+	}
+}
+
+/*
+ * 
+ * 
+ */
+void servers_from_file(FILE *fichier, struct serveur *serv_tab, int nb_lignes)
+{
+	char buf[100];
+	int test, i = 0;
+	while(i < nb_lignes){
+		while(test != '\n'){
+			memset(buf, '\0', 100);
+			test = element_from_file(fichier, buf);
+
+			if(test == '|' && buf[0] == '.') // détecte un nom
+				snprintf(serv_tab[i].nom, 99, buf);
+			if(test == '|' && buf[0] != '.') // détecte une adresse ip
+				snprintf(serv_tab[i].ip, 39, buf);
+			if(test == '\n') //détecte un numéro de port
+				serv_tab[i].port = atoi(buf);
+		}
+		i++;
+		test = 0;
+	}
+	return;
+}
+
 /******************************************************************************
 * FONCTIONS DOMAINE
 ******************************************************************************/
@@ -85,20 +129,6 @@ void domaine_fils2()
 
 	// Initialisation - Reception - Fermeture ---------------------------------
 	sockfd = init_socket(&my_addr, DOMAINE2_PORT, DOMAINE2_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, DOMAINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void domaine_fils3()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, DOMAINE3_PORT, DOMAINE3_ADDR, addrlen, 1);	
 	rcv(sockfd);
 	// Initialisation - Envoi - Fermeture ---------------------------------
 	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
