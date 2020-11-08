@@ -4,10 +4,7 @@
 
 int main(int argc, char const *argv[])
 {
-	/*
-	int sockfd;	
-	struct sockaddr_in6 my_addr, client_addr;
-	*/
+
 	int reason;
 
 	for(int i=0;i<3;i++){
@@ -43,16 +40,7 @@ int main(int argc, char const *argv[])
 				break;
 		}
 	}
-	/*
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, port_reception, DOMAINE_ADDR, addrlen, 1);	
-	rcv(sockfd);
 
-
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, sent_request, &client_addr);
-	*/
 
 	for(int j=0; j<3;j++){
 		if(wait(&reason) == -1)
