@@ -3,7 +3,9 @@
 #endif
 
 int main(int argc, char const *argv[])
-{
+{	
+	(void)argc;
+	(void)argv;
 
 	struct serveur sousdomaine_fr[4]; //pour résoudre
 	struct serveur sousdomaine_com[4]; //pour résoudre

@@ -61,25 +61,15 @@ struct serveur{
 };
 
 void raler(char *, int );
-int init_socket(struct sockaddr_in6*, long int, const char*, int, int);
+int init_socket(struct sockaddr_in6*, long int, const char*, int);
 
-int rcv(int);
-int snd(int, const char *, struct sockaddr_in6 *);
+void rcv(int);
+void snd(int, const char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
 void servers_from_file(char*, struct serveur*, int);
 
 
 // Fonctions domaine
-void fils(int, char*);
-void domaine_fils2();
+void request_process(int, char*);
 
-// Fonctions sous_domaine
-void sousdomaine_fils1();
-void sousdomaine_fils2();
-void sousdomaine_fils3();
-
-// Fonctions machine
-void machine_fils1();
-void machine_fils2();
-void machine_fils3();
 #endif

@@ -7,10 +7,11 @@
  
 int main(int argc, char const *argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	struct serveur racine[2]; // pour lui
 	struct serveur sousdomaine[4]; // pour résoudre
-
-	
 
 	servers_from_file("./lists/infoclient", racine, 2); // pour lui
 

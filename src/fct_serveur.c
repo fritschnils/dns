@@ -5,6 +5,12 @@
 
 socklen_t addrlen = sizeof(struct sockaddr_in6);
 
+/* Fonction : Traiter les erreurs 
+ * Arguments : 
+ * 		- msg = message d'erreur 
+ *		- perror_isset = true si perror est placé
+ * Retour : rien
+ */
 void raler(char *msg, int perror_isset)
 {
 	fprintf(stderr, "%s\n", msg);
@@ -13,7 +19,16 @@ void raler(char *msg, int perror_isset)
 	exit(EXIT_FAILURE);
 }
 
-int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_addr, int addrlen, int is_recv_socket)
+/* Fonction : Initialiser une socket 
+ * Arguments : 
+ * 		- adress = sockar_in à remplir
+ *		- port = port de la socket
+ *		- txt_addr = adresse de la socket (format string)
+ *		- is_recv_socket = (=true) pour une socket de reception 
+ *						   (=false) pour une socket d'envoi
+ * Retour : Numéro du descripteur de la socket crée
+ */
+int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_addr, int is_recv_socket)
 {
 	int sockfd, ip_bin;
 	if((sockfd = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP)) == -1)
@@ -35,7 +50,12 @@ int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_add
 	return sockfd;
 }
 
-int rcv(int sockfd)
+/* Fonction : Attendre message sur une socket
+ * Arguments : 
+ * 		- sockfd = socket sur laquelle attendre
+ * Retour : rien
+ */
+void rcv(int sockfd)
 {
 	char buf[BUFFSIZE];
 	int nb_octets;
@@ -44,27 +64,36 @@ int rcv(int sockfd)
 	if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, NULL, NULL)) == -1)
 		raler("recvfrom", 1);
 
-	printf("message recu : %s\n", buf);
+	//printf("message recu : %s\n", buf);
 
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
-	return 0;
 }
 
-int snd(int sockfd, const char *msg, struct sockaddr_in6 *client_addr)
+/* Fonction : Envoyer un message
+ * Arguments : 
+ * 		- sockfd = socket utilisée pour envoyer 
+ *		- msg = message à envoyer
+ *		- dest_addr = adresse du destinataire
+ * Retour : rien
+ */
+void snd(int sockfd, const char *msg, struct sockaddr_in6 *dest_adr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
-	if(sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *) client_addr, addrlen) == -1)
+	if(sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *) dest_adr, addrlen) == -1)
 			raler("sendto", 1);
 
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
-	return 0;
 }
 
-/*
- * Met dans <storage> la string (bien formée) reconnue jusqu'à avoir rencontré 'EOF' ou '|'' ou '\n'
- * Return : le dernier char rencontré (= EOF ou '|' ou '\n') 
+
+/* Fonction : Récupérer une chaine depuis le format chaine|chaine|...|chaine
+ *			  et la placer, bien formée ('\0' à la fin), dans storage.
+ * Arguments : 
+ * 		- fichier = structure de fichier dans lequel on cherche
+ *		- storage = adresse où stocker la chaîne bien formée
+ * Retour : Dernier charactère rencontré après la chaine
  */
 int element_from_file(FILE *fichier, char* storage)
 {
@@ -80,9 +109,12 @@ int element_from_file(FILE *fichier, char* storage)
 	}
 }
 
-/*
- * 
- * 
+/* Fonction : Charger un fichier-liste de serveurs dans un tableau de serveurs.
+ * Arguments : 
+ * 		- filename = fichier dans lequel chercher les serveurs
+ *		- serv_tab = tableau de serveurs à remplir
+ *		- nb_lignes = nombre de lignes du fichier (= nombre de serveurs)
+ * Retour : rien
  */
 void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
 {
@@ -99,9 +131,9 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
 			test = element_from_file(fichier, buf);
 
 			if(test == '|' && buf[0] == '.') // détecte un nom
-				snprintf(serv_tab[i].nom, 99, buf);
+				strncpy(serv_tab[i].nom, buf, 99);
 			if(test == '|' && buf[0] != '.') // détecte une adresse ip
-				snprintf(serv_tab[i].ip, 39, buf);
+				strncpy(serv_tab[i].ip, buf, 39);
 			if(test == '\n') //détecte un numéro de port
 				serv_tab[i].port = atoi(buf);
 		}
@@ -114,119 +146,22 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
 		raler("fclose", 1);
 }
 
-void fils(int port, char *adresse)
+/* Fonction : Attendre une requête de client et y répondre
+ * Arguments : 
+ * 		- port = port sur lequel attendre la requête
+ *		- adresse = adresse sur laquelle attendre la requête
+ * Retour : rien
+ */
+void request_process(int port, char *adresse)
 {
 	int sockfd;
 	struct sockaddr_in6 my_addr, client_addr;
 
 	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, port, adresse, addrlen, 1);	
+	sockfd = init_socket(&my_addr, port, adresse, 1);	
 	rcv(sockfd);
 	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
+	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
 	snd(sockfd, DOMAINE_REQUEST, &client_addr);
 	exit(EXIT_SUCCESS);
 }
-
-
-/*
-void domaine_fils2()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, DOMAINE2_PORT, DOMAINE2_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, DOMAINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-
-void sousdomaine_fils1()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, SOUSDOMAINE1_PORT, SOUSDOMAINE1_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, SOUSDOMAINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void sousdomaine_fils2()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, SOUSDOMAINE2_PORT, SOUSDOMAINE2_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, SOUSDOMAINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void sousdomaine_fils3()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, SOUSDOMAINE3_PORT, SOUSDOMAINE3_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, SOUSDOMAINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-
-void machine_fils1()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, MACHINE1_PORT, MACHINE1_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, MACHINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void machine_fils2()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, MACHINE2_PORT, MACHINE2_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, MACHINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-
-void machine_fils3()
-{
-	int sockfd;
-	struct sockaddr_in6 my_addr, client_addr;
-
-	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, MACHINE3_PORT, MACHINE3_ADDR, addrlen, 1);	
-	rcv(sockfd);
-	// Initialisation - Envoi - Fermeture ---------------------------------
-	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
-	snd(sockfd, MACHINE_REQUEST, &client_addr);
-	exit(EXIT_SUCCESS);
-}
-*/
