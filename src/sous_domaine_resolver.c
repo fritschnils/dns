@@ -4,25 +4,41 @@
 
 int main(int argc, char const *argv[])
 {
-	struct serveur sousdomaine[4]; 
+
+	struct serveur sousdomaine[4];//pour lui
+
+	struct serveur sousdomaine_fr[4]; //pour résoudre
+	struct serveur sousdomaine_com[4]; //pour résoudre
+
+
+
+
+	servers_from_file("./lists/inforacine", sousdomaine, 4); //pour lui
+
+
+
+
+
+
+
+	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, 4);
+
 	
-	FILE* fichier = NULL;
-	if((fichier = fopen("./lists/inforacine", "r")) == NULL)
-		raler("fopen", 1);
-
-	servers_from_file(fichier, sousdomaine, 4);
-
-	if(fclose(fichier) != 0)
-		raler("fclose", 1);
-
-
 	for(int i = 0; i < 4; i++){
-		printf("sousdomaine%d :\nip = %s\nport = %d\nnom = %s\n", i, sousdomaine[i].ip, sousdomaine[i].port, sousdomaine[i].nom);
+		printf("sousdomaine_fr%d :\nip = %s\nport = %d\nnom = %s\n", i, sousdomaine_fr[i].ip, sousdomaine_fr[i].port, sousdomaine_fr[i].nom);
 	}
+	
+	
+
+	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, 4);
 
 
-
-
+	
+	for(int i = 0; i < 4; i++){
+		printf("sousdomaine_com%d :\nip = %s\nport = %d\nnom = %s\n", i, sousdomaine_com[i].ip, sousdomaine_com[i].port, sousdomaine_com[i].nom);
+	
+	}
+	
 
 /*
 	int reason;
@@ -35,7 +51,7 @@ int main(int argc, char const *argv[])
 						raler("fork", 1);
 						break;
 					case 0 : 
-						domaine_fils1();
+						sousdomaine_fils1();
 				}
 				break;
 
@@ -45,7 +61,7 @@ int main(int argc, char const *argv[])
 							raler("fork", 1);
 						break;
 					case 0 : 
-						domaine_fils2();
+						sousdomaine_fils2();
 				}
 				break;
 
@@ -55,7 +71,7 @@ int main(int argc, char const *argv[])
 						raler("fork", 1);
 							break;
 					case 0 : 
-						domaine_fils3();
+						sousdomaine_fils3();
 				}
 				break;
 		}

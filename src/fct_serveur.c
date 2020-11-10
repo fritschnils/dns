@@ -2,6 +2,9 @@
 #include "../include/fct_serveur.h"
 #endif
 
+
+socklen_t addrlen = sizeof(struct sockaddr_in6);
+
 void raler(char *msg, int perror_isset)
 {
 	fprintf(stderr, "%s\n", msg);
@@ -81,10 +84,15 @@ int element_from_file(FILE *fichier, char* storage)
  * 
  * 
  */
-void servers_from_file(FILE *fichier, struct serveur *serv_tab, int nb_lignes)
+void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
 {
 	char buf[100];
 	int test, i = 0;
+
+	FILE* fichier = NULL;
+	if((fichier = fopen(filename, "r")) == NULL)
+		raler("fopen", 1);
+
 	while(i < nb_lignes){
 		while(test != '\n'){
 			memset(buf, '\0', 100);
@@ -101,20 +109,18 @@ void servers_from_file(FILE *fichier, struct serveur *serv_tab, int nb_lignes)
 		test = 0;
 	}
 	return;
+
+	if(fclose(fichier) != 0)
+		raler("fclose", 1);
 }
 
-/******************************************************************************
-* FONCTIONS DOMAINE
-******************************************************************************/
-socklen_t addrlen = sizeof(struct sockaddr_in6);
-
-void domaine_fils1()
+void fils(int port, char *adresse)
 {
 	int sockfd;
 	struct sockaddr_in6 my_addr, client_addr;
 
 	// Initialisation - Reception - Fermeture ---------------------------------
-	sockfd = init_socket(&my_addr, DOMAINE1_PORT, DOMAINE1_ADDR, addrlen, 1);	
+	sockfd = init_socket(&my_addr, port, adresse, addrlen, 1);	
 	rcv(sockfd);
 	// Initialisation - Envoi - Fermeture ---------------------------------
 	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, addrlen, 0);
@@ -122,6 +128,8 @@ void domaine_fils1()
 	exit(EXIT_SUCCESS);
 }
 
+
+/*
 void domaine_fils2()
 {
 	int sockfd;
@@ -136,9 +144,7 @@ void domaine_fils2()
 	exit(EXIT_SUCCESS);
 }
 
-/******************************************************************************
-* FONCTIONS SOUS_DOMAINE
-******************************************************************************/
+
 void sousdomaine_fils1()
 {
 	int sockfd;
@@ -181,9 +187,7 @@ void sousdomaine_fils3()
 	exit(EXIT_SUCCESS);
 }
 
-/******************************************************************************
-* FONCTIONS MACHINE
-******************************************************************************/
+
 void machine_fils1()
 {
 	int sockfd;
@@ -225,3 +229,4 @@ void machine_fils3()
 	snd(sockfd, MACHINE_REQUEST, &client_addr);
 	exit(EXIT_SUCCESS);
 }
+*/

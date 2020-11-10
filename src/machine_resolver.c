@@ -5,21 +5,26 @@
 int main(int argc, char const *argv[])
 {
 
+	struct serveur sousdomaine_fr[4]; //pour résoudre
+	struct serveur sousdomaine_com[4]; //pour résoudre
 
-	struct serveur machine_a_fr[4]; 
-	struct serveur machine_a_com[4]; 
-	struct serveur machine_b_fr[4]; 
-	struct serveur machine_b_com[4]; 
+	struct serveur machine_a_fr[4]; //pour résoudre
+	struct serveur machine_a_com[4]; //pour résoudre
+	struct serveur machine_b_fr[4]; //pour résoudre
+	struct serveur machine_b_com[4]; //pour résoudre
+
 	
-	FILE* fichier = NULL;
-	if((fichier = fopen("./lists/machine/a.fr", "r")) == NULL)
-		raler("fopen", 1);
 
-	servers_from_file(fichier, machine_a_fr, 4);
 
-	if(fclose(fichier) != 0)
-		raler("fclose", 1);
 
+
+	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, 4); //pour résoudre
+	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, 4); //pour résoudre
+
+
+
+
+	servers_from_file("./lists/machine/a.fr", machine_a_fr, 4);
 
 	for(int i = 0; i < 4; i++){
 		printf("machine_a_fr%d :\nip = %s\nport = %d\nnom = %s\n", i, machine_a_fr[i].ip, machine_a_fr[i].port, machine_a_fr[i].nom);
@@ -29,15 +34,7 @@ int main(int argc, char const *argv[])
 
 
 
-	fichier = NULL;
-	if((fichier = fopen("./lists/machine/a.com", "r")) == NULL)
-		raler("fopen", 1);
-
-	servers_from_file(fichier, machine_a_com, 4);
-
-	if(fclose(fichier) != 0)
-		raler("fclose", 1);
-
+	servers_from_file("./lists/machine/a.com", machine_a_com, 4);
 
 	for(int i = 0; i < 4; i++){
 		printf("machine_a_com%d :\nip = %s\nport = %d\nnom = %s\n", i, machine_a_com[i].ip, machine_a_com[i].port, machine_a_com[i].nom);
@@ -46,16 +43,7 @@ int main(int argc, char const *argv[])
 
 
 
-
-	fichier = NULL;
-	if((fichier = fopen("./lists/machine/b.fr", "r")) == NULL)
-		raler("fopen", 1);
-
-	servers_from_file(fichier, machine_b_fr, 4);
-
-	if(fclose(fichier) != 0)
-		raler("fclose", 1);
-
+	servers_from_file("./lists/machine/b.fr", machine_b_fr, 4);
 
 	for(int i = 0; i < 4; i++){
 		printf("machine_b_fr%d :\nip = %s\nport = %d\nnom = %s\n", i, machine_b_fr[i].ip, machine_b_fr[i].port, machine_b_fr[i].nom);
@@ -65,25 +53,11 @@ int main(int argc, char const *argv[])
 
 
 
-	fichier = NULL;
-	if((fichier = fopen("./lists/machine/b.com", "r")) == NULL)
-		raler("fopen", 1);
-
-	servers_from_file(fichier, machine_b_com, 4);
-
-	if(fclose(fichier) != 0)
-		raler("fclose", 1);
-
+	servers_from_file("./lists/machine/b.com", machine_b_com, 4);
 
 	for(int i = 0; i < 4; i++){
 		printf("machine_b_com%d :\nip = %s\nport = %d\nnom = %s\n", i, machine_b_com[i].ip, machine_b_com[i].port, machine_b_com[i].nom);
 	}
-
-
-
-
-
-
 
 
 

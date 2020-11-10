@@ -66,11 +66,11 @@ int init_socket(struct sockaddr_in6*, long int, const char*, int, int);
 int rcv(int);
 int snd(int, const char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
-void servers_from_file(FILE *, struct serveur*, int);
+void servers_from_file(char*, struct serveur*, int);
 
 
 // Fonctions domaine
-void domaine_fils1();
+void fils(int, char*);
 void domaine_fils2();
 
 // Fonctions sous_domaine
