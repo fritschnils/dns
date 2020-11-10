@@ -2,90 +2,65 @@
 #include "../include/fct_serveur.h"
 #endif
 
+/*
+NB_RACINES 2
+NB_DOMAINES 4
+NB_SOUS_DOMAINES 8
+NB_MACHINES 16
+*/
+
 int main(int argc, char const *argv[])
 {
 	(void)argc;
 	(void)argv;
 
-	struct serveur sousdomaine[4];//pour lui
+	struct serveur sousdomaine[NB_DOMAINES];//pour lui
 
-	struct serveur sousdomaine_fr[4]; //pour résoudre
-	struct serveur sousdomaine_com[4]; //pour résoudre
-
-
+	struct serveur sousdomaine_fr[NB_SOUS_DOMAINES/2]; //pour résoudre
+	struct serveur sousdomaine_com[NB_SOUS_DOMAINES/2]; //pour résoudre
 
 
-	servers_from_file("./lists/inforacine", sousdomaine, 4); //pour lui
+	servers_from_file("./lists/inforacine", sousdomaine, NB_DOMAINES); //pour lui
+	// affichage
+	printf("\n");
+	for(int i = 0; i < NB_DOMAINES; i++){
+	printf("sousdomaine%d : ip = %s port = %d nom = %s \n", i, sousdomaine[i].ip, sousdomaine[i].port, sousdomaine[i].nom);
+	}
 
-
-
-
-
-
-
-	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, 4);
-
-	
-	for(int i = 0; i < 4; i++){
-		printf("sousdomaine_fr%d :\nip = %s\nport = %d\nnom = %s\n", i, sousdomaine_fr[i].ip, sousdomaine_fr[i].port, sousdomaine_fr[i].nom);
+	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, NB_SOUS_DOMAINES/2);
+	/* affichage*/
+	printf("\n");
+	for(int i = 0; i < NB_SOUS_DOMAINES/2; i++){
+		printf("sousdomaine_fr%d : ip = %s port = %d nom = %s \n", i, sousdomaine_fr[i].ip, sousdomaine_fr[i].port, sousdomaine_fr[i].nom);
 	}
 	
-	
-
-	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, 4);
-
-
-	
-	for(int i = 0; i < 4; i++){
-		printf("sousdomaine_com%d :\nip = %s\nport = %d\nnom = %s\n", i, sousdomaine_com[i].ip, sousdomaine_com[i].port, sousdomaine_com[i].nom);
+	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, NB_SOUS_DOMAINES/2);
+	/* affichage*/
+	printf("\n");
+	for(int i = 0; i < NB_SOUS_DOMAINES/2; i++){
+		printf("sousdomaine_com%d : ip = %s port = %d nom = %s \n", i, sousdomaine_com[i].ip, sousdomaine_com[i].port, sousdomaine_com[i].nom);
 	
 	}
+
 	
-
-/*
-	int reason;
-
-	for(int i=0;i<3;i++){
-		switch(i){
-			case 0:
-				switch(fork()){
-					case -1 :
-						raler("fork", 1);
-						break;
-					case 0 : 
-						sousdomaine_fils1();
-				}
+	// Création processus
+	for(int i = 0; i < NB_DOMAINES; i++){
+		switch(fork()){
+			case -1 :
+				raler("fork", 1);
 				break;
-
-			case 1:
-				switch(fork()){
-					case -1 :
-							raler("fork", 1);
-						break;
-					case 0 : 
-						sousdomaine_fils2();
-				}
-				break;
-
-			case 2:
-				switch(fork()){
-					case -1 :
-						raler("fork", 1);
-							break;
-					case 0 : 
-						sousdomaine_fils3();
-				}
+			case 0 : 
+				if(i < 2)
+					//AFFECTER TABLEAU DE SERVEURS POUR RESOUDRE
+					request_process(sousdomaine[i].port, sousdomaine[i].ip); //FR
+				else
+					//AFFECTER TABLEAU DE SERVEURS POUR RESOUDRE
+					request_process(sousdomaine[i].port, sousdomaine[i].ip); //COM
 				break;
 		}
 	}
-
-	for(int j=0; j<3;j++){
-		if(wait(&reason) == -1)
-			raler("wait", 1);
-		if(!WIFEXITED(reason) || WEXITSTATUS(reason) == EXIT_FAILS)
-			raler("child terminated abnormally", 0);
-	}
-	exit(EXIT_SUCCESS);
-	*/
+	
+	n_wait(NB_DOMAINES);
+	
 	return 0;
 }

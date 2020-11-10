@@ -15,22 +15,22 @@ init_ip:
 	sleep 2
 	sudo ip -force addr add 192.168.0.200/24 dev wlp3s0 #processus client
 
-	sudo ip -force addr add 192.168.0.211/24 dev wlp3s0 #processus racine1
-	sudo ip -force addr add 192.168.0.212/24 dev wlp3s0 #processus racine2
+	sudo ip -force addr add 192.168.0.111/24 dev wlp3s0 #processus racine1
+	sudo ip -force addr add 192.168.0.112/24 dev wlp3s0 #processus racine2
 
-	sudo ip -force addr add 192.168.0.221/24 dev wlp3s0 #processus server .fr
-	sudo ip -force addr add 192.168.0.222/24 dev wlp3s0 #processus server .fr
-	sudo ip -force addr add 192.168.0.223/24 dev wlp3s0 #processus server .com
-	sudo ip -force addr add 192.168.0.224/24 dev wlp3s0 #processus server .com
+	sudo ip -force addr add 192.168.0.121/24 dev wlp3s0 #processus server .fr
+	sudo ip -force addr add 192.168.0.122/24 dev wlp3s0 #processus server .fr
+	sudo ip -force addr add 192.168.0.123/24 dev wlp3s0 #processus server .com
+	sudo ip -force addr add 192.168.0.124/24 dev wlp3s0 #processus server .com
 
-	sudo ip -force addr add 192.168.0.231/24 dev wlp3s0 #processus server .a.fr
-	sudo ip -force addr add 192.168.0.232/24 dev wlp3s0 #processus server .a.fr
-	sudo ip -force addr add 192.168.0.233/24 dev wlp3s0 #processus server .b.fr
-	sudo ip -force addr add 192.168.0.234/24 dev wlp3s0 #processus server .b.fr
-	sudo ip -force addr add 192.168.0.235/24 dev wlp3s0 #processus server .a.com
-	sudo ip -force addr add 192.168.0.236/24 dev wlp3s0 #processus server .a.com
-	sudo ip -force addr add 192.168.0.237/24 dev wlp3s0 #processus server .b.com
-	sudo ip -force addr add 192.168.0.238/24 dev wlp3s0 #processus server .b.com
+	sudo ip -force addr add 192.168.0.131/24 dev wlp3s0 #processus server .a.fr
+	sudo ip -force addr add 192.168.0.132/24 dev wlp3s0 #processus server .a.fr
+	sudo ip -force addr add 192.168.0.133/24 dev wlp3s0 #processus server .b.fr
+	sudo ip -force addr add 192.168.0.134/24 dev wlp3s0 #processus server .b.fr
+	sudo ip -force addr add 192.168.0.135/24 dev wlp3s0 #processus server .a.com
+	sudo ip -force addr add 192.168.0.136/24 dev wlp3s0 #processus server .a.com
+	sudo ip -force addr add 192.168.0.137/24 dev wlp3s0 #processus server .b.com
+	sudo ip -force addr add 192.168.0.138/24 dev wlp3s0 #processus server .b.com
 
 test:
 	bash ./test.sh

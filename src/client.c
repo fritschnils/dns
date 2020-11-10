@@ -2,10 +2,15 @@
 #include "../include/fct_serveur.h"
 #endif
 
+/*
+NB_RACINES 2
+NB_DOMAINES 4
+NB_SOUS_DOMAINES 8
+NB_MACHINES 16
+*/
 
 int main(int argc, char const *argv[])
 {
-
 	(void)argc;
 	(void)argv;
 	struct serveur racine[2]; 
@@ -19,6 +24,8 @@ int main(int argc, char const *argv[])
 		printf("racine%d :\nip = %s\nport = %d\n", i, racine[i].ip, racine[i].port);
 	}
 	
+
+
 	
 	int sockfd;
 	char *sent_request = "salut";

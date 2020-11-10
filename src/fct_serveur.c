@@ -140,8 +140,6 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
 		i++;
 		test = 0;
 	}
-	return;
-
 	if(fclose(fichier) != 0)
 		raler("fclose", 1);
 }
@@ -164,4 +162,20 @@ void request_process(int port, char *adresse)
 	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
 	snd(sockfd, DOMAINE_REQUEST, &client_addr);
 	exit(EXIT_SUCCESS);
+}
+
+/* Fonction : Attendre n processus
+ * Arguments : 
+ * 		- n = nombre de processus à attendre
+ * Retour : rien
+ */
+void n_wait(int n){
+	int reason;
+
+	for(int j = 0; j < n; j++){
+		if(wait(&reason) == -1)
+			raler("wait", 1);
+		if(!WIFEXITED(reason) || WEXITSTATUS(reason) == EXIT_FAILS)
+			raler("child terminated abnormally", 0);
+	}
 }
