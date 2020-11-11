@@ -18,23 +18,26 @@ int main(int argc, char const *argv[])
 
 	struct serveur sousdomaine_fr[NB_SOUS_DOMAINES/2]; //pour résoudre
 	struct serveur sousdomaine_com[NB_SOUS_DOMAINES/2]; //pour résoudre
+	
+	struct timeval start, end;
+	gettimeofday(&start, NULL);
 
 
-	servers_from_file("./lists/inforacine", sousdomaine, NB_DOMAINES); //pour lui
+	servers_from_file("./lists/inforacine", sousdomaine, NB_DOMAINES, 0); //pour lui
 	// affichage
 	printf("\n");
 	for(int i = 0; i < NB_DOMAINES; i++){
 	printf("sousdomaine%d : ip = %s port = %d nom = %s \n", i, sousdomaine[i].ip, sousdomaine[i].port, sousdomaine[i].nom);
 	}
 
-	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, NB_SOUS_DOMAINES/2);
+	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, NB_SOUS_DOMAINES/2, 0);
 	/* affichage*/
 	printf("\n");
 	for(int i = 0; i < NB_SOUS_DOMAINES/2; i++){
 		printf("sousdomaine_fr%d : ip = %s port = %d nom = %s \n", i, sousdomaine_fr[i].ip, sousdomaine_fr[i].port, sousdomaine_fr[i].nom);
 	}
 	
-	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, NB_SOUS_DOMAINES/2);
+	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, NB_SOUS_DOMAINES/2, 0);
 	/* affichage*/
 	printf("\n");
 	for(int i = 0; i < NB_SOUS_DOMAINES/2; i++){
@@ -42,6 +45,10 @@ int main(int argc, char const *argv[])
 	
 	}
 
+  	gettimeofday(&end, NULL);
+  	printf("Time taken  : %ld micro seconds\n",
+    ((end.tv_sec * 1000000 + end.tv_usec) -
+    (start.tv_sec * 1000000 + start.tv_usec)));
 	
 	// Création processus
 	for(int i = 0; i < NB_DOMAINES; i++){

@@ -19,13 +19,13 @@ int main(int argc, char const *argv[])
 		memset(racine[i].nom, '\0', 100);
 	struct serveur sousdomaine[NB_DOMAINES]; // pour résoudre
 
-	servers_from_file("./lists/infoclient", racine, NB_RACINES); // pour lui
+	servers_from_file("./lists/infoclient", racine, NB_RACINES, 1); // pour lui
 	printf("\n");
 	for(int i = 0; i < NB_RACINES; i++){
 		printf("racine%d : ip = %s port = %d nom = %s\n", i, racine[i].ip, racine[i].port, racine[i].nom);
 	}
 
-	servers_from_file("./lists/inforacine", sousdomaine, NB_DOMAINES);
+	servers_from_file("./lists/inforacine", sousdomaine, NB_DOMAINES, 0);
 	printf("\n");
 	for(int i = 0; i < NB_DOMAINES; i++){
 		printf("sousdomaine%d : ip = %s port = %d nom = %s\n", i, sousdomaine[i].ip, sousdomaine[i].port, sousdomaine[i].nom);

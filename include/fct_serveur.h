@@ -11,6 +11,7 @@
 #include <limits.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 
 #define BUFFSIZE 1024
@@ -40,7 +41,7 @@ int init_socket(struct sockaddr_in6*, long int, const char*, int);
 void rcv(int);
 void snd(int, const char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
-void servers_from_file(char*, struct serveur*, int);
+void servers_from_file(char*, struct serveur*, int, int);
 void request_process(int, char*);
 void n_wait(int);
 #endif

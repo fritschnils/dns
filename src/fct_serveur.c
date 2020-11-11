@@ -100,12 +100,18 @@ int element_from_file(FILE *fichier, char* storage)
 	int c, i = 0;
 	while(1){
 		c = fgetc(fichier);
+		//printf("fgetc : %c\n", c);
 		if(c == EOF || c == '|' || c == '\n'){
 			storage[i] = '\0';
+			//printf("		récuperé : %s| i = %d\n", storage, i);
 			return c;
 		}
-		storage[i] = c;
-		i++;
+
+		if(!(c == '.' && i == 0)){
+			//printf("j'écris : %c\n", c);
+			storage[i] = c;
+			i++;
+		}
 	}
 }
 
@@ -114,12 +120,13 @@ int element_from_file(FILE *fichier, char* storage)
  * 		- filename = fichier dans lequel chercher les serveurs
  *		- serv_tab = tableau de serveurs à remplir
  *		- nb_lignes = nombre de lignes du fichier (= nombre de serveurs)
+ *		- isclient = (=true) si c'est le client qui appelle la fonction
  * Retour : rien
  */
-void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
+void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, int isclient)
 {
 	char buf[100];
-	int test, i = 0;
+	int test, i = 0, isnewline = 1;
 
 	FILE* fichier = NULL;
 	if((fichier = fopen(filename, "r")) == NULL)
@@ -129,14 +136,16 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes)
 		while(test != '\n'){
 			memset(buf, '\0', 100);
 			test = element_from_file(fichier, buf);
-
-			if(test == '|' && buf[0] == '.') // détecte un nom
+			//printf(" server_from_file a récuperé : %s | dernier char : %c\n", buf, test);
+			if(test == '|' &&  isnewline && !isclient) // détecte un nom
 				strncpy(serv_tab[i].nom, buf, 99);
 			if(test == '|' && buf[0] != '.') // détecte une adresse ip
 				strncpy(serv_tab[i].ip, buf, 39);
 			if(test == '\n') //détecte un numéro de port
 				serv_tab[i].port = atoi(buf);
+			isnewline = 0;
 		}
+		isnewline = 1;
 		i++;
 		test = 0;
 	}
