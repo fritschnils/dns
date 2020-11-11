@@ -76,9 +76,9 @@ int main(int argc, char const *argv[])
 				break;
 			case 0 : 
 				if(j < 4)
-					request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip);
-				else
-					request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip);
+					//request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip);
+				//else
+					//request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip);
 				break;
 		}
 	}

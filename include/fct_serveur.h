@@ -14,7 +14,7 @@
 #include <sys/time.h>
 
 
-#define BUFFSIZE 1024
+#define BUFFSIZE 255
 #define EXIT_FAILS 255
 
 #define NB_RACINES 2
@@ -35,13 +35,28 @@ struct serveur{
 	int port;
 };
 
+struct requete {
+	char req[150];
+	char nom[100];
+	char ip[40];
+	int port;
+};
+
 void raler(char *, int );
 int init_socket(struct sockaddr_in6*, long int, const char*, int);
 
-void rcv(int);
+void rcv(int, char*);
 void snd(int, const char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
 void servers_from_file(char*, struct serveur*, int, int);
-void request_process(int, char*);
+void request_process(int, char*, struct serveur*);
 void n_wait(int);
+void nom_from_request(char*, char *);
+
+
+
+int nb_lignes(char *);
+void sitelist_from_file(char *, struct requete *, int);
+int init_client(struct requete **);
+
 #endif

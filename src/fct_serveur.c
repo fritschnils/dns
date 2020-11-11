@@ -55,16 +55,16 @@ int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_add
  * 		- sockfd = socket sur laquelle attendre
  * Retour : rien
  */
-void rcv(int sockfd)
+void rcv(int sockfd, char *storage)
 {
-	char buf[BUFFSIZE];
+	//char buf[BUFFSIZE];
 	int nb_octets;
 
-	memset(buf, '\0', BUFFSIZE);
-	if((nb_octets = recvfrom(sockfd, buf, BUFFSIZE, 0, NULL, NULL)) == -1)
+	//memset(buf, '\0', BUFFSIZE);
+	if((nb_octets = recvfrom(sockfd, storage, BUFFSIZE, 0, NULL, NULL)) == -1)
 		raler("recvfrom", 1);
 
-	//printf("message recu : %s\n", buf);
+	printf("message recu : %s\n", storage);
 
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
@@ -153,20 +153,60 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, 
 		raler("fclose", 1);
 }
 
+
+
+void nom_from_request(char* storage, char *request)
+{
+	int repere = 2, i = 0, j = 0;
+
+	while(repere){
+		if(request[i] == '|')
+			repere--;
+		i++;
+	}
+
+	while(request[i] != '\0'){
+		storage[j] = request[i];
+		i++;
+		j++;
+	}
+
+}
+
+
+void resolve(char *brut_request, struct serveur *serv_resolution, char *solution)
+{
+	char request[BUFFSIZE];
+	nom_from_request(request, brut_request);
+	printf("RESOLUTION : %s\n", request);
+}
 /* Fonction : Attendre une requête de client et y répondre
  * Arguments : 
  * 		- port = port sur lequel attendre la requête
  *		- adresse = adresse sur laquelle attendre la requête
  * Retour : rien
  */
-void request_process(int port, char *adresse)
+void request_process(int port, char *adresse, struct serveur *serv_resolution)
 {
 	int sockfd;
 	struct sockaddr_in6 my_addr, client_addr;
 
+	char receive[BUFFSIZE];
+	char a_renvoyer[BUFFSIZE];
+	memset(receive, '\0', BUFFSIZE);
+	memset(a_renvoyer, '\0', BUFFSIZE);
 	// Initialisation - Reception - Fermeture ---------------------------------
 	sockfd = init_socket(&my_addr, port, adresse, 1);	
-	rcv(sockfd);
+	rcv(sockfd, receive);
+
+	//RECUPERER NOM A RESOUDRE
+	resolve(receive, serv_resolution, a_renvoyer);
+	//RESOUDRE
+
+
+	//FORMER REPONSE RETOUR
+
+
 	// Initialisation - Envoi - Fermeture ---------------------------------
 	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
 	snd(sockfd, DOMAINE_REQUEST, &client_addr);
@@ -187,4 +227,89 @@ void n_wait(int n){
 		if(!WIFEXITED(reason) || WEXITSTATUS(reason) == EXIT_FAILS)
 			raler("child terminated abnormally", 0);
 	}
+}
+
+
+
+
+
+
+
+
+
+
+//FONCTIONS UNIQUEMENT POUR CLIENT
+
+
+
+
+/* Fonction : Compter le nombre de sites à résoudre
+ * Arguments : 
+ * 		- filename = fichier contenant les sites à résoudre
+ * Retour : Nombre de sites à résoudre
+ */
+int nb_lignes(char *filename)
+{
+	int c;
+	int nb_line = 0;
+	FILE *fichier;
+
+	if((fichier = fopen(filename, "r")) == NULL)
+		raler("fopen", 1);
+
+	while ((c = getc(fichier)) != EOF){
+	    if (c == '\n')
+	        ++nb_line;
+	}
+
+	if(fclose(fichier) != 0)
+		raler("fclose", 1);
+	return nb_line;
+}
+
+/* Fonction : Charger un fichier de sites à résoudre dans un tableau
+ * Arguments : 
+ * 		- filename = fichier contenant les sites à résoudre
+ *		- req_tab = tableau dans lequel mettre les noms à résoudre
+ *		- nb_requete = nombre de sites à résoudre
+ * Retour : rien
+ */
+void sitelist_from_file(char *filename, struct requete *req_tab, int nb_requete)
+{
+	char buf[100];
+	int i = 0;
+	char* test;
+
+	FILE* fichier = NULL;
+	if((fichier = fopen(filename, "r")) == NULL)
+		raler("fopen", 1);
+
+	while(i < nb_requete){
+		memset(buf, '\0', 100);
+		test = fgets(buf, 99, fichier);
+		if(test == NULL) //sécurité
+			break;
+		//printf("%d\n",i);
+		strncpy(req_tab[i].nom, buf, 99);
+		i++;
+	}
+
+	if(fclose(fichier) != 0)
+		raler("fclose", 1);
+}
+
+/* Fonction : Initialise les requetes initiales du client
+ * Arguments : 
+ * 		- tab = tableau dans lequel mettre les noms à résoudre
+ * Retour : rien
+ */
+int init_client(struct requete **tab)
+{
+	int nb_sites = nb_lignes("./lists/sites_a_resoudre");
+	(*tab) = malloc(nb_sites*sizeof(struct requete));
+	if(tab == NULL)
+		raler("malloc requetes", 1);
+
+	sitelist_from_file("./lists/sites_a_resoudre", (*tab), nb_sites);
+	return nb_sites;
 }

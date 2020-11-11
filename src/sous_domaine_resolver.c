@@ -59,10 +59,10 @@ int main(int argc, char const *argv[])
 			case 0 : 
 				if(i < 2)
 					//AFFECTER TABLEAU DE SERVEURS POUR RESOUDRE
-					request_process(sousdomaine[i].port, sousdomaine[i].ip); //FR
+					request_process(sousdomaine[i].port, sousdomaine[i].ip, sousdomaine_fr); //FR
 				else
 					//AFFECTER TABLEAU DE SERVEURS POUR RESOUDRE
-					request_process(sousdomaine[i].port, sousdomaine[i].ip); //COM
+					request_process(sousdomaine[i].port, sousdomaine[i].ip, sousdomaine_com); //COM
 				break;
 		}
 	}

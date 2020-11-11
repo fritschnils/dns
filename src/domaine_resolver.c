@@ -9,6 +9,8 @@ NB_SOUS_DOMAINES 8
 NB_MACHINES 16
 */
  
+
+
 int main(int argc, char const *argv[])
 {
 	(void)argc;
@@ -32,17 +34,17 @@ int main(int argc, char const *argv[])
 	}
 	
 	
-	for(int i = 0; i < NB_RACINES; i++){
+	for(int i = 0; i < NB_RACINES-1; i++){
 				switch(fork()){
 					case -1 :
 						raler("fork", 1);
 						break;
 					case 0 : 
-						request_process(racine[i].port, racine[i].ip);
+						request_process(racine[i].port, racine[i].ip, sousdomaine);
 						break;
 				}
 	}
 	
-	n_wait(NB_RACINES);
+	n_wait(NB_RACINES-1);
 	return 0;
 }
