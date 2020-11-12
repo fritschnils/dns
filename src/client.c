@@ -44,81 +44,54 @@ int main(int argc, char const *argv[])
 	// INITIALISATION 
 	nb_sites = init_client(&req_tab); // retourne le nb de requetes et les alloue
 
-	/*
-	for(int i = 0; i < nb_sites; i++){
-		printf("site[%d] : %s\n", i, req_tab[i].nom);
-	} 
-	*/
-
 	servers_from_file("./lists/infoclient", racine, 2, 1);
 	memset(racine[0].nom, '\0', 40);
 	memset(racine[1].nom, '\0', 40);
 
-
-	/*
-	for(int i = 0; i < 2; i++){
-		printf("racine%d :\nip = %s\nport = %d\nnom : %s\n", i, racine[i].ip, racine[i].port, racine[i].nom);
-	}
-	*/
 	// FIN INITIALISATION
 	
 	struct timeval start, end, result;
-	//gettimeofday(&start, NULL);
-
     char str[10];
     char receive[BUFFSIZE];
     memset(receive, '\0', BUFFSIZE);
-	//timeval_to_str(start, str);
-    //printf("%s\n", str);
+    long int temps_ecoule;
 	int sockfd;
 	char *sent_request = "salut";
 	struct sockaddr_in6 my_addr, address;
 
 
-    //for(int i = 0; i < nb_sites; i++){
-		int i = 0;
+    for(int i = 0; i < nb_sites; i++){
+
     	memset(str, '\0', 10);
-    	gettimeofday(&start, NULL);
-		timeval_to_str(start, str);// NE PAS TARDER A ENVOYER REQUETE 
-
-		sockfd = init_socket(&address, racine[i].port, racine[i].ip, 0); //prépare la socket
-
+    	gettimeofday(&start, NULL);// NE PAS TARDER A ENVOYER REQUETE 
+		timeval_to_str(start, str);
+		if(i%2 == 0)
+			sockfd = init_socket(&address, racine[0].port, racine[0].ip, 0); //prépare la socket
+		if(i%2 == 1)
+			sockfd = init_socket(&address, racine[1].port, racine[1].ip, 0); //prépare la socket
 		client_request_maker(req_tab[i].req, id_transac, str, req_tab[i].nom); //crée requete send
 
 		snd(sockfd, req_tab[i].req, &address); //envoi requete
 
-		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);//crée requete recv
+		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);//crée socket recv
 
 		rcv(sockfd, receive); //recoit
+		
+		gettimeofday(&end, NULL);
+		temps_ecoule = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+		printf("temps écoulé : %ldms\n", temps_ecoule/1000);
 
-		//printf("%s\n", req_tab[i].req);
 		id_transac++;
-	//}
+	}
+			sockfd = init_socket(&address, racine[0].port, racine[0].ip, 0); //prépare la socket
+			snd(sockfd, "!", &address); //envoi requete
+			sockfd = init_socket(&address, racine[1].port, racine[1].ip, 0); //prépare la socket
+			snd(sockfd, "!", &address); //envoi requete
 
 
 
+	free(req_tab);
     exit(EXIT_SUCCESS);
 
-
-
-
-
-/*
-	int sockfd;
-	char *sent_request = "salut";
-
-	struct sockaddr_in6 my_addr, address;
-
-	for(int i = 0; i < 2; i++){
-		sockfd = init_socket(&address, racine[i].port, racine[i].ip, 0);
-
-		snd(sockfd, req_tab[i].nom, &address);
-
-		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
-		rcv(sockfd);
-	}
-
-	*/
-	free(req_tab);
 	return 0;
 }

@@ -33,18 +33,18 @@ int main(int argc, char const *argv[])
 		printf("sousdomaine%d : ip = %s port = %d nom = %s\n", i, sousdomaine[i].ip, sousdomaine[i].port, sousdomaine[i].nom);
 	}
 	
-	
-	for(int i = 0; i < NB_RACINES-1; i++){
+	for(int i = 0; i < NB_RACINES; i++){
 				switch(fork()){
 					case -1 :
 						raler("fork", 1);
 						break;
 					case 0 : 
-						request_process(racine[i].port, racine[i].ip, sousdomaine, NB_SOUS_DOMAINES);
+						request_process(racine[i].port, racine[i].ip, sousdomaine, NB_DOMAINES, TYPE_RACINE);
+						exit(EXIT_SUCCESS);
 						break;
 				}
 	}
 	
-	n_wait(NB_RACINES-1);
+	n_wait(NB_RACINES);
 	return 0;
 }

@@ -22,6 +22,10 @@
 #define NB_SOUS_DOMAINES 8
 #define NB_MACHINES 16
 
+#define TYPE_RACINE 2
+#define TYPE_SOUSDOMAINE 1
+#define TYPE_MACIHNE 0
+
 #define DOMAINE_REQUEST "domaine recu"
 #define SOUSDOMAINE_REQUEST "sous_domaine recu"
 #define MACHINE_REQUEST "machine recu"
@@ -49,10 +53,11 @@ void rcv(int, char*);
 void snd(int, const char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
 void servers_from_file(char*, struct serveur*, int, int);
-void request_process(int, char*, struct serveur*, int);
+void request_process(int, char*, struct serveur*, int, int);
 void n_wait(int);
 void nom_from_request(char*, char *);
-void resolve(char *, struct serveur *, int , char *);
+void domain_from_request(char* , char *, int);
+void resolve(char *, struct serveur *, int , char *, int);
 
 
 
