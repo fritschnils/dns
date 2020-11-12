@@ -153,7 +153,13 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, 
 		raler("fclose", 1);
 }
 
-
+/* Fonction : Extraire de la requete, la partie du nom à résoudre
+ * Arguments : 
+ * 		- storage = string où stocker la partie du nom à résoudre extraite
+ *		- request = requete de laquelle extraire la partie du nom à résoudre
+ *		- type = type du serveur appelant la fonction (sert à l'ocaliser la partie du nom à résoudre)
+ * Retour : rien
+ */
 void domain_from_request(char* storage, char *request, int type)
 {
 	int repere = 2, i = 0, j = 0;
@@ -178,6 +184,12 @@ void domain_from_request(char* storage, char *request, int type)
 	storage[j] = '\0';
 }
 
+/* Fonction : Extraire la partie nom de la requete
+ * Arguments : 
+ * 		- storage = string où stocker le nom extrait
+ *		- request = requete de laquelle extraire le nom
+ * Retour : rien
+ */
 void nom_from_request(char* storage, char *request)
 {
 	int repere = 2, i = 0, j = 0;
@@ -195,6 +207,12 @@ void nom_from_request(char* storage, char *request)
 	storage[j] = '\0';
 }
 
+/* Fonction : Extraire la partie id-transaction de la requete
+ * Arguments : 
+ * 		- storage = string où stocker l'id-transaction extrait
+ *		- request = requete de laquelle extraire l'id-transaction
+ * Retour : rien
+ */
 void idtransac_from_request(char* storage, char *request)
 {
 	int i = 0;
@@ -205,6 +223,12 @@ void idtransac_from_request(char* storage, char *request)
 	storage[i] = '\0';
 }
 
+/* Fonction : Extraire la partie horodatage de la requete
+ * Arguments : 
+ * 		- storage = string où stocker l'horodatage extraite
+ *		- request = requete de laquelle extraire l'horodatage
+ * Retour : rien
+ */
 void horodatage_from_request(char* storage, char *request)
 {
 	int repere = 1, i = 0, j = 0;
@@ -224,7 +248,15 @@ void horodatage_from_request(char* storage, char *request)
 }
 
 
-
+/* Fonction : Résoudre une requete client et construire la requete-réponse du processus-serveur appelant
+ * Arguments : 
+ * 		- brut_request = requete à résoudre sous forme brut (=comme reçue)
+ *		- serv_resolution = base de donnée des resolutions du serveur
+ * 		- taille = nombre de resolutions de la base de données du serveur
+ *		- solution = string dans laquelle fabriquer la requete-réponse
+ *		- server_type = type du serveur appelant (0=domaine_resolver, 1=sous-domaine_resolver ou 2=machine_resolver)
+ * Retour : rien
+ */
 void resolve(char *brut_request, struct serveur *serv_resolution, int taille, char *solution, int server_type)
 {
 	char id_transac[11];//1
@@ -343,11 +375,7 @@ void n_wait(int n){
 
 
 
-
-
 //FONCTIONS UNIQUEMENT POUR CLIENT
-
-
 
 
 /* Fonction : Compter le nombre de sites à résoudre
@@ -419,4 +447,29 @@ int init_client(struct requete **tab)
 
 	sitelist_from_file("./lists/sites_a_resoudre", (*tab), nb_sites);
 	return nb_sites;
+}
+
+/* Fonction : Convertir struct timeval en string de longueur 10
+ * Arguments : 
+ * 		- start = timeval à convertir
+ *		- str = string dans laquelle convertir timeval
+ * Retour : rien
+ */
+void timeval_to_str(struct timeval start, char *str)
+{
+    int nombre = start.tv_sec + start.tv_usec;
+    sprintf(str, "%d%c", nombre, '\0');
+}
+
+/* Fonction : Fabriquer la requete client sous forme de string
+ * Arguments : 
+ * 		- storage = string où stocker la requete fabriquée
+ *		- id-transac = id de transaction de la requete
+ *		- horodatage = horodatage de la requete
+ *		- nom = site de la requete (élément à résoudre)
+ * Retour : rien
+ */
+void client_request_maker(char *storage, int id_transac, char *horodatage, char *nom)
+{
+	sprintf(storage, "%d|%s|%s%c", id_transac, horodatage, nom, '\0');
 }

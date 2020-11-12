@@ -60,9 +60,12 @@ void domain_from_request(char* , char *, int);
 void resolve(char *, struct serveur *, int , char *, int);
 
 
-
+//FONCTIONS UNIQUEMENT POUR CLIENT
 int nb_lignes(char *);
 void sitelist_from_file(char *, struct requete *, int);
 int init_client(struct requete **);
+void timeval_to_str(struct timeval , char *);
+void client_request_maker(char *, int , char *, char *);
+
 
 #endif
