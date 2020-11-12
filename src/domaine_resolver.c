@@ -40,7 +40,7 @@ int main(int argc, char const *argv[])
 						raler("fork", 1);
 						break;
 					case 0 : 
-						request_process(racine[i].port, racine[i].ip, sousdomaine);
+						request_process(racine[i].port, racine[i].ip, sousdomaine, NB_SOUS_DOMAINES);
 						break;
 				}
 	}

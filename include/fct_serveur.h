@@ -49,9 +49,10 @@ void rcv(int, char*);
 void snd(int, const char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
 void servers_from_file(char*, struct serveur*, int, int);
-void request_process(int, char*, struct serveur*);
+void request_process(int, char*, struct serveur*, int);
 void n_wait(int);
 void nom_from_request(char*, char *);
+void resolve(char *, struct serveur *, int , char *);
 
 
 

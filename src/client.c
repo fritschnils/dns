@@ -20,12 +20,12 @@ struct requete {
 void timeval_to_str(struct timeval start, char *str)
 {
     int nombre = start.tv_sec + start.tv_usec;
-    sprintf(str, "%d", nombre);
+    sprintf(str, "%d%c", nombre, '\0');
 }
 
 void client_request_maker(char *storage, int id_transac, char *horodatage, char *nom)
 {
-	sprintf(storage, "%d|%s|%s", id_transac, horodatage, nom);
+	sprintf(storage, "%d|%s|%s%c", id_transac, horodatage, nom, '\0');
 }
 
 
@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
 
 		rcv(sockfd, receive); //recoit
 
-		printf("%s\n", req_tab[i].req);
+		//printf("%s\n", req_tab[i].req);
 		id_transac++;
 	//}
 

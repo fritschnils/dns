@@ -165,28 +165,109 @@ void nom_from_request(char* storage, char *request)
 		i++;
 	}
 
-	while(request[i] != '\0'){
+	while(request[i] != '\n'){
 		storage[j] = request[i];
 		i++;
 		j++;
 	}
-
+	storage[j] = '\0';
 }
 
-
-void resolve(char *brut_request, struct serveur *serv_resolution, char *solution)
+void idtransac_from_request(char* storage, char *request)
 {
-	char request[BUFFSIZE];
-	nom_from_request(request, brut_request);
-	printf("RESOLUTION : %s\n", request);
+	int i = 0;
+	while(request[i] != '|'){
+		storage[i] = request[i];
+		i++;
+	}
+	storage[i] = '\0';
 }
+
+void horodatage_from_request(char* storage, char *request)
+{
+	int repere = 1, i = 0, j = 0;
+
+	while(repere){
+		if(request[i] == '|')
+			repere--;
+		i++;
+	}
+
+	while(request[i] != '|'){
+		storage[j] = request[i];
+		i++;
+		j++;
+	}
+	storage[j] = '\0';
+}
+
+
+
+void resolve(char *brut_request, struct serveur *serv_resolution, int taille, char *solution)
+{
+	char id_transac[11];//1
+	char horodatage[11];//2
+	char a_resoudre[BUFFSIZE];//3
+	int code = -1;//4
+	//5
+	char triplet1[BUFFSIZE];//solution1
+	char triplet2[BUFFSIZE];//solution2
+	//memset(triplet1, '\0', BUFFSIZE);
+	//memset(triplet2, '\0', BUFFSIZE);
+	//memset(id_transac, '\0', 11);
+	//memset(horodatage, '\0', 11);
+	//memset(a_resoudre, '\0', BUFFSIZE);
+
+	struct serveur solution1;
+	struct serveur solution2;
+	memset(solution1.nom, '\0', 100);
+	memset(solution2.nom, '\0', 100);
+
+	idtransac_from_request(id_transac, brut_request);
+	horodatage_from_request(horodatage, brut_request);
+	nom_from_request(a_resoudre, brut_request);
+	//printf("%s", brut_request);
+	//printf("%s", a_resoudre);
+
+	for(int i = 0; i < taille; i++){
+		if(strcmp(serv_resolution[i].nom, a_resoudre) ){//si on trouve la resolution
+			if(solution1.nom[0] == '\0'){//si s1 vide ecrire dedans sinon ecrire dans s2
+				strncpy(solution1.nom, serv_resolution[i].nom, 99);
+				solution1.port = serv_resolution[i].port;
+				strncpy(solution1.ip, serv_resolution[i].ip, 40);
+				code = 1; //si trouve au moins 1 solution alors code = 1
+			}
+			else{
+				strncpy(solution2.nom, serv_resolution[i].nom, 99);
+				solution2.port = serv_resolution[i].port;
+				strncpy(solution2.ip, serv_resolution[i].ip, 40);
+				code = 2; //si trouve 2 solutions alors code = 2
+				break;//les deux solutions sont trouvée, on peut quitter
+			}
+		}
+	}
+	if(code == 1){
+		sprintf(triplet1, "%s,%s,%d%c", solution1.nom, solution1.ip, solution1.port, '\0');
+		sprintf(solution, "%s|%s|%s|%d|%s%c", id_transac, horodatage, a_resoudre, code, triplet1, '\0');
+	}
+
+	else if(code == 2){
+		sprintf(triplet1, "%s,%s,%d%c", solution1.nom, solution1.ip, solution1.port, '\0');
+		sprintf(triplet2, "%s,%s,%d%c", solution2.nom, solution2.ip, solution2.port, '\0');
+		sprintf(solution, "%s|%s|%s|%d|%s|%s%c", id_transac, horodatage, a_resoudre, code, triplet1, triplet2, '\0');	
+	}
+
+
+	return;
+}
+
 /* Fonction : Attendre une requête de client et y répondre
  * Arguments : 
  * 		- port = port sur lequel attendre la requête
  *		- adresse = adresse sur laquelle attendre la requête
  * Retour : rien
  */
-void request_process(int port, char *adresse, struct serveur *serv_resolution)
+void request_process(int port, char *adresse, struct serveur *serv_resolution, int taille)
 {
 	int sockfd;
 	struct sockaddr_in6 my_addr, client_addr;
@@ -199,17 +280,14 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution)
 	sockfd = init_socket(&my_addr, port, adresse, 1);	
 	rcv(sockfd, receive);
 
-	//RECUPERER NOM A RESOUDRE
-	resolve(receive, serv_resolution, a_renvoyer);
-	//RESOUDRE
-
-
-	//FORMER REPONSE RETOUR
+	//RECUPERER NOM A RESOUDRE ++ RESOUDRE + FORMER REPONSE
+	resolve(receive, serv_resolution, taille, a_renvoyer);
+		printf("%s\n", a_renvoyer);
 
 
 	// Initialisation - Envoi - Fermeture ---------------------------------
 	sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
-	snd(sockfd, DOMAINE_REQUEST, &client_addr);
+	snd(sockfd, a_renvoyer, &client_addr);
 	exit(EXIT_SUCCESS);
 }
 
