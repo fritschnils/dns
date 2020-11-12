@@ -69,21 +69,34 @@ int main(int argc, char const *argv[])
 	
 
 	// Création processus
-	for(int j = 0; j < NB_SOUS_DOMAINES; j++){
+	for(int j = 0; j < NB_MACHINES/2; j++){
 		switch(fork()){
 			case -1 :
 				raler("fork", 1);
 				break;
 			case 0 : 
-				if(j < 4)
-					//request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip);
-				//else
-					//request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip);
+				if(j < 2){
+					request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip, machine_a_fr, NB_MACHINES/4, TYPE_MACHINE);
+					exit(EXIT_SUCCESS);
+				}
+				else if(j < 4){
+					request_process(sousdomaine_fr[j].port, sousdomaine_fr[j].ip, machine_b_fr, NB_MACHINES/4, TYPE_MACHINE);
+					exit(EXIT_SUCCESS);
+				}
+				else if(j < 6){
+					request_process(sousdomaine_com[j%4].port, sousdomaine_com[j%4].ip, machine_a_com, NB_MACHINES/4, TYPE_MACHINE);
+					exit(EXIT_SUCCESS);
+				}
+				else{
+					request_process(sousdomaine_com[j%4].port, sousdomaine_com[j%4].ip, machine_b_com, NB_MACHINES/4, TYPE_MACHINE);
+					exit(EXIT_SUCCESS);
+				}
+
 				break;
 		}
 	}
 
 
-	n_wait(NB_SOUS_DOMAINES);
+	n_wait(NB_MACHINES/2);
 	return 0;
 }

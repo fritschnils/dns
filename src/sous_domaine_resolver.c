@@ -19,8 +19,8 @@ int main(int argc, char const *argv[])
 	struct serveur sousdomaine_fr[NB_SOUS_DOMAINES/2]; //pour résoudre
 	struct serveur sousdomaine_com[NB_SOUS_DOMAINES/2]; //pour résoudre
 	
-	struct timeval start, end;
-	gettimeofday(&start, NULL);
+	//struct timeval start, end;
+	//gettimeofday(&start, NULL);
 
 
 	servers_from_file("./lists/inforacine", sousdomaine, NB_DOMAINES, 0); //pour lui
@@ -45,10 +45,10 @@ int main(int argc, char const *argv[])
 	
 	}
 
-  	gettimeofday(&end, NULL);
-  	printf("Time taken  : %ld micro seconds\n",
-    ((end.tv_sec * 1000000 + end.tv_usec) -
-    (start.tv_sec * 1000000 + start.tv_usec)));
+  	//gettimeofday(&end, NULL);
+  	//printf("Time taken  : %ld micro seconds\n",
+    //((end.tv_sec * 1000000 + end.tv_usec) -
+    //(start.tv_sec * 1000000 + start.tv_usec)));
 	
 	// Création processus
 	for(int i = 0; i < NB_DOMAINES; i++){
@@ -57,12 +57,15 @@ int main(int argc, char const *argv[])
 				raler("fork", 1);
 				break;
 			case 0 : 
-				if(i < 2)
-					//AFFECTER TABLEAU DE SERVEURS POUR RESOUDRE
+				if(i < 2){
 					request_process(sousdomaine[i].port, sousdomaine[i].ip, sousdomaine_fr, NB_SOUS_DOMAINES/2, TYPE_SOUSDOMAINE); //FR
-				else
-					//AFFECTER TABLEAU DE SERVEURS POUR RESOUDRE
+					exit(EXIT_SUCCESS);
+				}
+				else{
 					request_process(sousdomaine[i].port, sousdomaine[i].ip, sousdomaine_com, NB_SOUS_DOMAINES/2, TYPE_SOUSDOMAINE); //COM
+					exit(EXIT_SUCCESS);
+					}
+
 				break;
 		}
 	}

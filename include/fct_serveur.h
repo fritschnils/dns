@@ -24,7 +24,7 @@
 
 #define TYPE_RACINE 2
 #define TYPE_SOUSDOMAINE 1
-#define TYPE_MACIHNE 0
+#define TYPE_MACHINE 0
 
 #define DOMAINE_REQUEST "domaine recu"
 #define SOUSDOMAINE_REQUEST "sous_domaine recu"
