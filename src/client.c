@@ -17,7 +17,7 @@ struct requete {
 };
 */
 
-void reponse_extract_serveur(char *reponse, struct serveur *storage)
+void reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachine)
 {
 	int repere = 4, i = 0, j = 0;
 	char port[6];
@@ -46,14 +46,16 @@ void reponse_extract_serveur(char *reponse, struct serveur *storage)
 		storage[n].ip[j] = '\0';	
 		i++;
 		j = 0;
-	
-		while( (reponse[i] != '|' && n == 0) || (reponse[i] != '\0' && n == 1)){//recupere le port du serveur
+		//printf("nom : %s\nip :  %s\n", storage[n].nom, storage[n].ip);
+		while( (reponse[i] != '|' && n == 0 && !ismachine) || (reponse[i] != '\0' && n == 1) || (reponse[i] != '\0' && ismachine)){//recupere le port du serveur
 			port[j] = reponse[i];
 			i++;
 			j++;
 		}
 		port[j] = '\0';
 		storage[n].port = atoi(port);
+		if(ismachine)
+			return;
 		i++;
 		j = 0;
 	}
@@ -125,7 +127,7 @@ int main(int argc, char const *argv[])
 		//printf("temps écoulé : %ld\n", temps_ecoule);
 		//QUE FAIRE AVEC LE TEMPS ?? IL VA ETRE ECRASE BIENTOT
 
-		reponse_extract_serveur(requete_retour, tmp_server); 
+		reponse_extract_serveur(requete_retour, tmp_server, 0); 
 		//printf("EXTRACT SERVER 1 : \nnom : %s\nip : %s\nport : %d\n", tmp_server[0].nom, tmp_server[0].ip, tmp_server[0].port);
 		//printf("EXTRACT SERVER 2 : \nnom : %s\nip : %s\nport : %d\n", tmp_server[1].nom, tmp_server[1].ip, tmp_server[1].port);
 		
@@ -155,7 +157,7 @@ int main(int argc, char const *argv[])
 		temps_ecoule = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
 		
 
-		reponse_extract_serveur(requete_retour, tmp_server); 
+		reponse_extract_serveur(requete_retour, tmp_server, 0); 
 
 		id_transac++;
 		//ECHANGE AVEC SOUS_DOMAINE_RESOLVER FIN -------------------------------
@@ -183,12 +185,12 @@ int main(int argc, char const *argv[])
 		temps_ecoule = (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
 
 
-		reponse_extract_serveur(requete_retour, tmp_server); 
+		reponse_extract_serveur(requete_retour, tmp_server, 1); 
 
 		id_transac++;
 		//ECHANGE AVEC MACHINE_RESOLVER FIN -------------------------------
 
-		printf("requete : %s\rresolution : %s ou %s\n", req_tab[i].nom, tmp_server[0].ip, tmp_server[1].ip);
+		printf("requete : %s\rresolution : %s\n", req_tab[i].nom, tmp_server[0].ip);
 		printf("\n");
 
 	}
