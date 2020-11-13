@@ -19,6 +19,23 @@ void raler(char *msg, int perror_isset)
 	exit(EXIT_FAILURE);
 }
 
+
+int is_ipv4(char *adresseip)
+{
+    struct sockaddr_in sa;
+    int result = inet_pton(AF_INET, adresseip, &(sa.sin_addr));
+    return result != 0;
+}
+
+void ipv4toipv6(char *ipv4, char *ipv6)
+{
+	strncpy(ipv6, "::FFFF:", 7);
+	strncpy(&ipv6[7], ipv4, 16);
+	//printf("IPV4 TO IPV6%s\n", ipv6);
+}
+
+
+
 /* Fonction : Initialiser une socket 
  * Arguments : 
  * 		- adress = sockar_in à remplir
@@ -28,15 +45,24 @@ void raler(char *msg, int perror_isset)
  *						   (=false) pour une socket d'envoi
  * Retour : Numéro du descripteur de la socket crée
  */
-int init_socket(struct sockaddr_in6 *address, long int port, const char *txt_addr, int is_recv_socket)
+int init_socket(struct sockaddr_in6 *address, long int port, char *txt_addr, int is_recv_socket)
 {
 	int sockfd, ip_bin;
-	if((sockfd = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+	char ipv6[40];
+	memset(ipv6, '\0', 40);
+	if((sockfd = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		raler("socket", 1);
+
+	if(is_ipv4(txt_addr))
+		ipv4toipv6(txt_addr, ipv6); // Convertit en ipv6-mapped ipv4
 
 	address->sin6_family = AF_INET6;
 	address->sin6_port = htons(port);
-	ip_bin = inet_pton(AF_INET6, txt_addr, &address->sin6_addr);
+	if(ipv6[0] == '\0')
+		ip_bin = inet_pton(AF_INET6, txt_addr, &address->sin6_addr);
+	else 
+		ip_bin = inet_pton(AF_INET6, ipv6, &address->sin6_addr);
+
 	if(ip_bin == 0)
 		raler("inet_pton : src does not contain a character string representing a valid network address in the specified address family", 0);
 	if(ip_bin == -1)
@@ -64,7 +90,7 @@ void rcv(int sockfd, char *storage)
 	if((nb_octets = recvfrom(sockfd, storage, BUFFSIZE, 0, NULL, NULL)) == -1)
 		raler("recvfrom", 1);
 
-	printf("processus %d, message recu : %s\n",getpid(), storage);
+	//printf("processus %d, message recu : %s\n",getpid(), storage);
 
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
@@ -77,7 +103,7 @@ void rcv(int sockfd, char *storage)
  *		- dest_addr = adresse du destinataire
  * Retour : rien
  */
-void snd(int sockfd, const char *msg, struct sockaddr_in6 *dest_adr)
+void snd(int sockfd, char *msg, struct sockaddr_in6 *dest_adr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
 	if(sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *) dest_adr, addrlen) == -1)
@@ -163,7 +189,7 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, 
 void domain_from_request(char* storage, char *request, int type)
 {
 	int repere = 2, i = 0, j = 0;
-	printf("TYPE : %d\n", type);
+	//printf("TYPE : %d\n", type);
 	while(repere){
 		if(request[i] == '|')
 			repere--;
@@ -285,7 +311,7 @@ void resolve(char *brut_request, struct serveur *serv_resolution, int taille, ch
 	domain_from_request(a_resoudre, brut_request, server_type);//pour 5
 	//printf("%s", brut_request);
 	//printf("%s", a_resoudre);
-	printf("%d\n", taille);
+	//printf("%d\n", taille);
 	for(int i = 0; i < taille; i++){
 		printf("a resoudre : %s\nsolution : %s\n",a_resoudre, serv_resolution[i].nom);
 
@@ -342,7 +368,7 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 	
 		//RECUPERER NOM A RESOUDRE ++ RESOUDRE + FORMER REPONSE
 		resolve(receive, serv_resolution, taille, a_renvoyer, server_type);
-			printf("%s\n", a_renvoyer);
+			//printf("%s\n", a_renvoyer);
 	
 	
 		// Initialisation - Envoi - Fermeture ---------------------------------
@@ -472,4 +498,57 @@ void timeval_to_str(struct timeval start, char *str)
 void client_request_maker(char *storage, int id_transac, char *horodatage, char *nom)
 {
 	sprintf(storage, "%d|%s|%s%c", id_transac, horodatage, nom, '\0');
+}
+
+
+/* Fonction : Extrait le ou les infos des serveurs de la reponse resolue
+ * Arguments : 
+ * 		- reponse = reponse a la requete client
+ *		- storage = struct serveur dans laquelle stocker les infos extraites
+ *		- ismachine = (=true si c'est une reponse d'un machine_resolver) (=false sinon)
+ * Retour : rien
+ */
+void reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachine)
+{
+	int repere = 4, i = 0, j = 0;
+	char port[6];
+
+	while(repere){ //avance jusqu'au premier triplet
+		if(reponse[i] == '|')
+			repere--;
+		i++;
+	}
+
+	for(int n = 0; n < 2; n++){
+		while(reponse[i] != ','){//recupere le nom du serveur
+			storage[n].nom[j] = reponse[i];
+			i++;
+			j++;
+		}
+		storage[n].nom[j] = '\0';	
+		i++;
+		j = 0;
+	
+		while(reponse[i] != ','){//recupere l'ip du serveur
+			storage[n].ip[j] = reponse[i];
+			i++;
+			j++;
+		}
+		storage[n].ip[j] = '\0';	
+		i++;
+		j = 0;
+		//printf("nom : %s\nip :  %s\n", storage[n].nom, storage[n].ip);
+		while( (reponse[i] != '|' && n == 0 && !ismachine) || (reponse[i] != '\0' && n == 1) || (reponse[i] != '\0' && ismachine)){//recupere le port du serveur
+			port[j] = reponse[i];
+			i++;
+			j++;
+		}
+		port[j] = '\0';
+		storage[n].port = atoi(port);
+		if(ismachine)
+			return;
+		i++;
+		j = 0;
+	}
+
 }

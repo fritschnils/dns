@@ -26,10 +26,6 @@
 #define TYPE_SOUSDOMAINE 1
 #define TYPE_MACHINE 0
 
-#define DOMAINE_REQUEST "domaine recu"
-#define SOUSDOMAINE_REQUEST "sous_domaine recu"
-#define MACHINE_REQUEST "machine recu"
-
 #define CLIENT_ADDR "::FFFF:192.168.0.200"
 #define CLIENT_PORT 44444
 
@@ -47,10 +43,10 @@ struct requete {
 };
 
 void raler(char *, int );
-int init_socket(struct sockaddr_in6*, long int, const char*, int);
+int init_socket(struct sockaddr_in6*, long int, char*, int);
 
 void rcv(int, char*);
-void snd(int, const char *, struct sockaddr_in6 *);
+void snd(int, char *, struct sockaddr_in6 *);
 int element_from_file(FILE *, char* );
 void servers_from_file(char*, struct serveur*, int, int);
 void request_process(int, char*, struct serveur*, int, int);
@@ -66,6 +62,8 @@ void sitelist_from_file(char *, struct requete *, int);
 int init_client(struct requete **);
 void timeval_to_str(struct timeval , char *);
 void client_request_maker(char *, int , char *, char *);
+void reponse_extract_serveur(char *, struct serveur *, int);
+
 
 
 #endif

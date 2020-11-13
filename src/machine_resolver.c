@@ -2,73 +2,38 @@
 #include "../include/fct_serveur.h"
 #endif
 
-//NB_RACINES 2
-//NB_DOMAINES 4
-//NB_SOUS_DOMAINES 8
-//NB_MACHINES 16
-
 int main(int argc, char const *argv[])
 {	
 	(void)argc;
 	(void)argv;
 
-	struct serveur sousdomaine_fr[NB_SOUS_DOMAINES/2]; //pour lui
-	struct serveur sousdomaine_com[NB_SOUS_DOMAINES/2]; //pour lui
+/**************************************************************************/
+/* Initialisation des variables et chargement des fichiers                */
+/**************************************************************************/
 
-	struct serveur machine_a_fr[NB_MACHINES/4]; //pour résoudre
-	struct serveur machine_b_fr[NB_MACHINES/4]; //pour résoudre
-	struct serveur machine_a_com[NB_MACHINES/4]; //pour résoudre
-	struct serveur machine_b_com[NB_MACHINES/4]; //pour résoudre
+	struct serveur sousdomaine_fr[NB_SOUS_DOMAINES/2];
+	struct serveur sousdomaine_com[NB_SOUS_DOMAINES/2];
 
-	
+	struct serveur machine_a_fr[NB_MACHINES/4];
+	struct serveur machine_b_fr[NB_MACHINES/4];
+	struct serveur machine_a_com[NB_MACHINES/4];
+	struct serveur machine_b_com[NB_MACHINES/4];
 
+	//Adresses et ports pour les serveurs sous-domaine (serveurs lancés dans ce programme)
+	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, NB_SOUS_DOMAINES/2, 0);
+	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, NB_SOUS_DOMAINES/2, 0);
 
-
-
-	servers_from_file("./lists/sousdomaine/fr", sousdomaine_fr, NB_SOUS_DOMAINES/2, 0); //pour lui
-	printf("\n");
-	for(int i = 0; i < NB_SOUS_DOMAINES/2; i++){
-		printf("sousdomaine_fr%d : ip = %s port = %d nom = %s \n", i, sousdomaine_fr[i].ip, sousdomaine_fr[i].port, sousdomaine_fr[i].nom);
-	}
-	
-	servers_from_file("./lists/sousdomaine/com", sousdomaine_com, NB_SOUS_DOMAINES/2, 0); //pour lui
-	printf("\n");
-	for(int i = 0; i < NB_SOUS_DOMAINES/2; i++){
-		printf("sousdomaine_com%d : ip = %s port = %d nom = %s \n", i, sousdomaine_com[i].ip, sousdomaine_com[i].port, sousdomaine_com[i].nom);
-	}
-
-
-	
+	//Chaque type de serveur a accès à son propre fichier de résolution des machines
 	servers_from_file("./lists/machine/a.fr", machine_a_fr, NB_MACHINES/4, 0);
-	printf("\n");
-	for(int i = 0; i < NB_MACHINES/4; i++){
-		printf("machine_a_fr%d : ip = %s port = %d nom = %s \n", i, machine_a_fr[i].ip, machine_a_fr[i].port, machine_a_fr[i].nom);
-	}
-	
-
 	servers_from_file("./lists/machine/b.fr", machine_b_fr, NB_MACHINES/4, 0);
-	printf("\n");
-	for(int i = 0; i < NB_MACHINES/4; i++){
-		printf("machine_b_fr%d : ip = %s port = %d nom = %s \n", i, machine_b_fr[i].ip, machine_b_fr[i].port, machine_b_fr[i].nom);
-	}
-	
-
 	servers_from_file("./lists/machine/a.com", machine_a_com, NB_MACHINES/4, 0);
-	printf("\n");
-	for(int i = 0; i < NB_MACHINES/4; i++){
-		printf("machine_a_com%d : ip = %s port = %d nom = %s \n", i, machine_a_com[i].ip, machine_a_com[i].port, machine_a_com[i].nom);
-	}
-	
-
 	servers_from_file("./lists/machine/b.com", machine_b_com, NB_MACHINES/4, 0);
-	printf("\n");
-	for(int i = 0; i < NB_MACHINES/4; i++){
-		printf("machine_b_com%d : ip = %s port = %d nom = %s \n", i, machine_b_com[i].ip, machine_b_com[i].port, machine_b_com[i].nom);
-	}
 	
 	
 
-	// Création processus
+/**************************************************************************/
+/* Lancement des serveurs. 1 serveur par processus et chacun sa socket    */
+/**************************************************************************/
 	for(int j = 0; j < NB_MACHINES/2; j++){
 		switch(fork()){
 			case -1 :
@@ -91,12 +56,9 @@ int main(int argc, char const *argv[])
 					request_process(sousdomaine_com[j%4].port, sousdomaine_com[j%4].ip, machine_b_com, NB_MACHINES/4, TYPE_MACHINE);
 					exit(EXIT_SUCCESS);
 				}
-
 				break;
 		}
 	}
-
-
 	n_wait(NB_MACHINES/2);
 	return 0;
 }
