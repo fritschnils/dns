@@ -36,9 +36,9 @@ int main(int argc, char const *argv[])
 	struct serveur tmp_server[2];
 	//struct serveur sousdomaine[NB_SOUS_DOMAINES]; // stocker les serveurs sous_domaine
 
-	int nb_sites = 0;
+	int nb_sites = 0, enable = 1;
 	int id_transac = 1;
-	int sockfd;
+	int sockfd_envoi, sockfd_reception;
     //long int temps_ecoule;
 
     char horodatage[11];
@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
 
     struct requete *req_tab = NULL;
 
-	struct timeval start, end;
+	struct timeval total, start, end;
 
 	struct sockaddr_in6 my_addr, address;
 
@@ -61,8 +61,11 @@ int main(int argc, char const *argv[])
 	memset(racine[0].nom, '\0', 100);
 	memset(racine[1].nom, '\0', 100);
     
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 100;
 
-
+	gettimeofday(&total, NULL);
 /**************************************************************************/
 /* Lancement de la résolution des requêtes une par une                    */
 /**************************************************************************/
@@ -75,22 +78,26 @@ int main(int argc, char const *argv[])
 		timeval_to_str(start, horodatage);
 
 		if(i%2 == 0) //POUR L'INSTANT on choisit 1 sur 2 au lieu de TOURNIQUET
-			sockfd = init_socket(&address, racine[0].port, racine[0].ip, 0);
+			sockfd_envoi = init_socket(&address, racine[0].port, racine[0].ip, 0);
 		if(i%2 == 1)
-			sockfd = init_socket(&address, racine[1].port, racine[1].ip, 0);
+			sockfd_envoi = init_socket(&address, racine[1].port, racine[1].ip, 0);
 
 		//Crée requête
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom); 
 
 		//Envoi requête à racine
 		printf("envoie a racine : %s\n", req_tab[i].req);
-		snd(sockfd, req_tab[i].req, &address);
+		snd(sockfd_envoi, req_tab[i].req, &address);
 
 		//Crée socket pour recevoir
-		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
+		sockfd_reception = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
+		//if(setsockopt(sockfd_reception, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0)
+		//	raler("opt, revtime", 1);
 
+		//if(setsockopt(sockfd_reception, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+		//	raler("opt, reuse", 1);
 		//Reçoit réponse de racine
-		rcv(sockfd, requete_retour); 
+		rcv(sockfd_reception, requete_retour); 
 		printf("requete retour : %s\n", requete_retour);
 
 		//Extrait les infos reçues (adresses des serveurs de domaine)
@@ -112,24 +119,28 @@ int main(int argc, char const *argv[])
 		timeval_to_str(start, horodatage);
 
 		if(i%2 == 0) //POUR L'INSTANT on choisit 1 sur 2 au lieu de TOURNIQUET
-			sockfd = init_socket(&address, tmp_server[0].port, tmp_server[0].ip, 0);
+			sockfd_envoi = init_socket(&address, tmp_server[0].port, tmp_server[0].ip, 0);
 		if(i%2 == 1)
-			sockfd = init_socket(&address, tmp_server[1].port, tmp_server[1].ip, 0);
+			sockfd_envoi = init_socket(&address, tmp_server[1].port, tmp_server[1].ip, 0);
 
 		//Crée requête
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom);
 
 		//Envoi requête à domaine
 		printf("envoie a domaine : %s\n", req_tab[i].req);
-		snd(sockfd, req_tab[i].req, &address);
+		snd(sockfd_envoi, req_tab[i].req, &address);
 		
 		//Crée socket pour recevoir
-		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
-		
+		sockfd_reception = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
+		//if(setsockopt(sockfd_reception, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0)
+		//	raler("opt, revtime", 1);
+
+		//if(setsockopt(sockfd_reception, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+		//	raler("opt, reuse", 1);
 		//Reçoit réponse de domaine
-		rcv(sockfd, requete_retour); 
+		rcv(sockfd_reception, requete_retour); 
 		printf("requete retour : %s\n", requete_retour);
-		
+
 		//Extrait les infos reçues (adresses des serveurs de sous_domaine)
 		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
 			printf("Site inexistant\n");
@@ -146,22 +157,27 @@ int main(int argc, char const *argv[])
 		timeval_to_str(start, horodatage);
 
 		if(i%2 == 0) //POUR L'INSTANT on choisit 1 sur 2 au lieu de TOURNIQUET
-			sockfd = init_socket(&address, tmp_server[0].port, tmp_server[0].ip, 0);
+			sockfd_envoi = init_socket(&address, tmp_server[0].port, tmp_server[0].ip, 0);
 		if(i%2 == 1)
-			sockfd = init_socket(&address, tmp_server[1].port, tmp_server[1].ip, 0);
+			sockfd_envoi = init_socket(&address, tmp_server[1].port, tmp_server[1].ip, 0);
 		
 		//Crée requête
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom);
 
 		//Envoi requête à sous-domaine
 		printf("envoie a sous_domaine : %s\n", req_tab[i].req);
-		snd(sockfd, req_tab[i].req, &address); //envoi requete
+		snd(sockfd_envoi, req_tab[i].req, &address); //envoi requete
 
 		//Crée socket pour recevoir
-		sockfd = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
+		sockfd_reception = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
+		//if(setsockopt(sockfd_reception, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0)
+		//	raler("opt, revtime", 1);
+
+		//if(setsockopt(sockfd_reception, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+		//	raler("opt, reuse", 1);
 
 		//Reçoit réponse de sous_domaine
-		rcv(sockfd, requete_retour);
+		rcv(sockfd_reception, requete_retour);
 		printf("requete retour : %s\n", requete_retour);
 
 		//Extrait les infos reçues (adresses des serveurs de machines)
@@ -179,7 +195,9 @@ int main(int argc, char const *argv[])
 
 
 
+	gettimeofday(&end, NULL);
 
+	printf("TEMPS : %ldms\n", ((end.tv_sec * 1000000 + end.tv_usec) - (total.tv_sec * 1000000 + total.tv_usec))/1000 );
 
 
 	//FERMETURE

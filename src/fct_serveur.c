@@ -369,17 +369,21 @@ void resolve(char *brut_request, struct serveur *serv_resolution, int taille, ch
  */
 void request_process(int port, char *adresse, struct serveur *serv_resolution, int taille, int server_type)
 {	
+
+	char receive[BUFFSIZE];
+	int sockfd_envoi, sockfd_reception, sockfd_ack;
+	struct sockaddr_in6 my_addr, client_addr;
+	char a_renvoyer[BUFFSIZE];
+	char ack[2];
+
 	while(1){
-		char receive[BUFFSIZE];
-		int sockfd;
-		struct sockaddr_in6 my_addr, client_addr;
-	
-		char a_renvoyer[BUFFSIZE];
+
 		memset(receive, '\0', BUFFSIZE);
 		memset(a_renvoyer, '\0', BUFFSIZE);
+		memset(ack, '\0', 2);
 		// Initialisation - Reception - Fermeture ---------------------------------
-		sockfd = init_socket(&my_addr, port, adresse, 1);	
-		rcv(sockfd, receive);
+		sockfd_reception = init_socket(&my_addr, port, adresse, 1);	
+		rcv(sockfd_reception, receive);
 		if(receive[0] == '!')
 			exit(EXIT_SUCCESS);
 
@@ -387,9 +391,12 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 		resolve(receive, serv_resolution, taille, a_renvoyer, server_type);
 	
 		// Initialisation - Envoi - Fermeture ---------------------------------
-		sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
-		snd(sockfd, a_renvoyer, &client_addr);
-		//exit(EXIT_SUCCESS);
+
+		for(int x = 0; x < 600; x++){printf("OE\n");}
+
+		sockfd_envoi = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
+		snd(sockfd_envoi, a_renvoyer, &client_addr);
+		printf("envoi à client : %s\n", a_renvoyer);
 	}
 }
 
