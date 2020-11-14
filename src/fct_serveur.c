@@ -16,6 +16,20 @@ void raler(char *msg, int perror_isset)
 	fprintf(stderr, "%s\n", msg);
 	if (perror_isset)
 		perror(msg);
+
+	FILE* fichier = NULL;
+	if((fichier = fopen("log.err", "w")) == NULL){
+		perror(msg);
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(fichier, "%s\n", msg);
+
+	if(fclose(fichier) != 0){
+		perror(msg);
+		exit(EXIT_FAILURE);
+	}
+
 	exit(EXIT_FAILURE);
 }
 
@@ -202,7 +216,7 @@ void domain_from_request(char* storage, char *request, int type)
 		i++;
 	}
 
-	while(request[i] != '\n'){
+	while(request[i] != '\0'){
 		storage[j] = request[i];
 		i++;
 		j++;
@@ -225,7 +239,7 @@ void nom_from_request(char* storage, char *request)
 		i++;
 	}
 
-	while(request[i] != '\n'){
+	while(request[i] != '\0'){
 		storage[j] = request[i];
 		i++;
 		j++;
@@ -304,16 +318,14 @@ void resolve(char *brut_request, struct serveur *serv_resolution, int taille, ch
 	struct serveur solution2;
 	memset(solution1.nom, '\0', 100);
 	memset(solution2.nom, '\0', 100);
-
 	idtransac_from_request(id_transac, brut_request);//1
 	horodatage_from_request(horodatage, brut_request);//2
 	nom_from_request(nom, brut_request);//3
+
 	domain_from_request(a_resoudre, brut_request, server_type);//pour 5
-	//printf("%s", brut_request);
-	//printf("%s", a_resoudre);
-	//printf("%d\n", taille);
+
 	for(int i = 0; i < taille; i++){
-		printf("a resoudre : %s\nsolution : %s\n",a_resoudre, serv_resolution[i].nom);
+		//printf("a resoudre : %s\nsolution : %s\n",a_resoudre, serv_resolution[i].nom);
 
 		if(strcmp(serv_resolution[i].nom, a_resoudre) == 0){//si on trouve la resolution
 			if(solution1.nom[0] == '\0'){//si s1 vide ecrire dedans sinon ecrire dans s2
@@ -331,15 +343,20 @@ void resolve(char *brut_request, struct serveur *serv_resolution, int taille, ch
 			}
 		}
 	}
+	if(solution1.nom[0] == '\0' && solution2.nom[0] == '\0')
+		code = 0;
+
 	if(code == 1){
 		sprintf(triplet1, "%s,%s,%d%c", solution1.nom, solution1.ip, solution1.port, '\0');
 		sprintf(solution, "%s|%s|%s|%d|%s%c", id_transac, horodatage, nom, code, triplet1, '\0');
 	}
-
 	else if(code == 2){
 		sprintf(triplet1, "%s,%s,%d%c", solution1.nom, solution1.ip, solution1.port, '\0');
 		sprintf(triplet2, "%s,%s,%d%c", solution2.nom, solution2.ip, solution2.port, '\0');
 		sprintf(solution, "%s|%s|%s|%d|%s|%s%c", id_transac, horodatage, nom, code, triplet1, triplet2, '\0');	
+	}
+	else if(code == 0){
+		sprintf(solution, "%s|%s|%s|%d%c", id_transac, horodatage, nom, code, '\0');	
 	}
 	return;
 }
@@ -365,11 +382,9 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 		rcv(sockfd, receive);
 		if(receive[0] == '!')
 			exit(EXIT_SUCCESS);
-	
-		//RECUPERER NOM A RESOUDRE ++ RESOUDRE + FORMER REPONSE
+
+		//RECUPERER NOM A RESOUDRE + RESOUDRE + FORMER REPONSE
 		resolve(receive, serv_resolution, taille, a_renvoyer, server_type);
-			//printf("%s\n", a_renvoyer);
-	
 	
 		// Initialisation - Envoi - Fermeture ---------------------------------
 		sockfd = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
@@ -428,6 +443,8 @@ int nb_lignes(char *filename)
 	return nb_line;
 }
 
+
+
 /* Fonction : Charger un fichier de sites à résoudre dans un tableau
  * Arguments : 
  * 		- filename = fichier contenant les sites à résoudre
@@ -438,7 +455,7 @@ int nb_lignes(char *filename)
 void sitelist_from_file(char *filename, struct requete *req_tab, int nb_requete)
 {
 	char buf[100];
-	int i = 0;
+	int i = 0, j = 0;
 	char* test;
 
 	FILE* fichier = NULL;
@@ -450,9 +467,14 @@ void sitelist_from_file(char *filename, struct requete *req_tab, int nb_requete)
 		test = fgets(buf, 99, fichier);
 		if(test == NULL) //sécurité
 			break;
-		//printf("%d\n",i);
+		memset(req_tab[i].nom, '\0', 100);
 		strncpy(req_tab[i].nom, buf, 99);
+
+		while(req_tab[i].nom[j] != '\n')
+			j++;
+		req_tab[i].nom[j] = '\0';
 		i++;
+		j = 0;
 	}
 
 	if(fclose(fichier) != 0)
@@ -506,12 +528,20 @@ void client_request_maker(char *storage, int id_transac, char *horodatage, char 
  * 		- reponse = reponse a la requete client
  *		- storage = struct serveur dans laquelle stocker les infos extraites
  *		- ismachine = (=true si c'est une reponse d'un machine_resolver) (=false sinon)
- * Retour : rien
+ * Retour : 1 si ok, -1 si site non trouvé (code == 0)
  */
-void reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachine)
+int reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachine)
 {
 	int repere = 4, i = 0, j = 0;
 	char port[6];
+
+	while(repere-1){ //avance jusqu'au code
+		if(reponse[i] == '|')
+			repere--;
+		i++;
+	}
+	if(reponse[i] == '0')
+		return -1;
 
 	while(repere){ //avance jusqu'au premier triplet
 		if(reponse[i] == '|')
@@ -546,9 +576,11 @@ void reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachi
 		port[j] = '\0';
 		storage[n].port = atoi(port);
 		if(ismachine)
-			return;
+			return 1;
 		i++;
 		j = 0;
 	}
+
+	return 1;
 
 }

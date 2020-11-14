@@ -26,8 +26,8 @@ struct serveur{
 
 int main(int argc, char const *argv[])
 {
-	(void)argc;
-	(void)argv;
+	(void) argv;
+	(void) argc;
 
 /**************************************************************************/
 /* Initialisation des variables et chargement des fichiers                */
@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
 	struct sockaddr_in6 my_addr, address;
 
 
-	// INITIALISATION 
+	// Initialise le tableau de requêtes et stock son nombre
 	nb_sites = init_client(&req_tab); 
 
 	//Adresses et ports des 2 serveurs racines
@@ -62,15 +62,11 @@ int main(int argc, char const *argv[])
 	memset(racine[1].nom, '\0', 100);
     
 
-	
-
 
 /**************************************************************************/
 /* Lancement de la résolution des requêtes une par une                    */
 /**************************************************************************/
     for(int i = 0; i < nb_sites; i++){
-
-
 
     //DEBUT ECHANGE AVEC DOMAINE_RESOLVER (SERVEURS RACINES) ---------------------------
     	memset(requete_retour, '\0', BUFFSIZE);
@@ -87,6 +83,7 @@ int main(int argc, char const *argv[])
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom); 
 
 		//Envoi requête à racine
+		printf("envoie a racine : %s\n", req_tab[i].req);
 		snd(sockfd, req_tab[i].req, &address);
 
 		//Crée socket pour recevoir
@@ -97,7 +94,10 @@ int main(int argc, char const *argv[])
 		printf("requete retour : %s\n", requete_retour);
 
 		//Extrait les infos reçues (adresses des serveurs de domaine)
-		reponse_extract_serveur(requete_retour, tmp_server, 0); 		
+		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
+			printf("Site inexistant\n");		
+			continue;
+		}
 		
 		//Transaction suivante
 		id_transac++;
@@ -120,6 +120,7 @@ int main(int argc, char const *argv[])
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom);
 
 		//Envoi requête à domaine
+		printf("envoie a domaine : %s\n", req_tab[i].req);
 		snd(sockfd, req_tab[i].req, &address);
 		
 		//Crée socket pour recevoir
@@ -130,8 +131,10 @@ int main(int argc, char const *argv[])
 		printf("requete retour : %s\n", requete_retour);
 		
 		//Extrait les infos reçues (adresses des serveurs de sous_domaine)
-		reponse_extract_serveur(requete_retour, tmp_server, 0); 
-		
+		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
+			printf("Site inexistant\n");
+			continue;
+		}
 		//Transaction suivante
 		id_transac++;
 	//FIN ECHANGE AVEC SOUS_DOMAINE_RESOLVER (SERVEURS DOMAINES) -----------------------
@@ -151,6 +154,7 @@ int main(int argc, char const *argv[])
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom);
 
 		//Envoi requête à sous-domaine
+		printf("envoie a sous_domaine : %s\n", req_tab[i].req);
 		snd(sockfd, req_tab[i].req, &address); //envoi requete
 
 		//Crée socket pour recevoir
@@ -161,8 +165,10 @@ int main(int argc, char const *argv[])
 		printf("requete retour : %s\n", requete_retour);
 
 		//Extrait les infos reçues (adresses des serveurs de machines)
-		reponse_extract_serveur(requete_retour, tmp_server, 1); 
-
+		if(reponse_extract_serveur(requete_retour, tmp_server, 1) == -1){
+			printf("Site inexistant\n");
+			continue;
+		}
 		//Transaction suivante
 		id_transac++;
 	//FIN ECHANGE AVEC MACHINE_RESOLVER (SERVEURS SOUS-DOMAINE) ------------------------

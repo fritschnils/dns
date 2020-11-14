@@ -62,7 +62,7 @@ void sitelist_from_file(char *, struct requete *, int);
 int init_client(struct requete **);
 void timeval_to_str(struct timeval , char *);
 void client_request_maker(char *, int , char *, char *);
-void reponse_extract_serveur(char *, struct serveur *, int);
+int reponse_extract_serveur(char *, struct serveur *, int);
 
 
 
