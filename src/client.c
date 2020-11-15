@@ -59,14 +59,15 @@ int main(int argc, char const *argv[])
 	int nb_sites = 0;
 	int id_transac = 1;
 	int sockfd_envoi, sockfd_reception;
-    //long int temps_ecoule;
+	//long int temps_ecoule;
 
-    char horodatage[11];
-    char requete_retour[BUFFSIZE];
+	char horodatage[11];
+	char horodatage_result[11];
+	char requete_retour[BUFFSIZE];
 
-    struct requete *req_tab = NULL;
+	struct requete *req_tab = NULL;
 
-	struct timeval total, start, end;
+	struct timeval total, start, end, result;
 
 	struct sockaddr_in6 my_addr, address;
 
@@ -83,15 +84,22 @@ int main(int argc, char const *argv[])
     
 	gettimeofday(&total, NULL);
 
+	FILE* log = NULL;
+	if((log = fopen("log", "w")) == NULL)
+		raler("open log", 1);
+
+	fprintf(log, "eddzzefz\n");
+
 /**************************************************************************/
 /* Lancement de la résolution des requêtes une par une                    */
 /**************************************************************************/
-    for(int i = 0; i < nb_sites; i++){
+	for(int i = 0; i < nb_sites; i++){
 
-    //DEBUT ECHANGE AVEC DOMAINE_RESOLVER (SERVEURS RACINES) ---------------------------
-    	memset(requete_retour, '\0', BUFFSIZE);
-    	memset(horodatage, '\0', 11);
-    	gettimeofday(&start, NULL);
+	//DEBUT ECHANGE AVEC DOMAINE_RESOLVER (SERVEURS RACINES) ---------------------------
+		memset(requete_retour, '\0', BUFFSIZE);
+		memset(horodatage, '\0', 11);
+		memset(horodatage_result, '\0', 11);
+		gettimeofday(&start, NULL);
 		timeval_to_str(start, horodatage);
 
 		//Tourniquet
@@ -111,12 +119,19 @@ int main(int argc, char const *argv[])
 		sockfd_reception = init_socket(&my_addr, CLIENT_PORT, CLIENT_ADDR, 1);
 
 		//Reçoit réponse de racine
-		rcv(sockfd_reception, requete_retour); 
-		printf("requete retour :         %s\n", requete_retour);
+		rcv(sockfd_reception, requete_retour);     	
+		gettimeofday(&end, NULL);
+		result.tv_sec = end.tv_sec - start.tv_sec;
+		result.tv_usec = end.tv_usec - start.tv_usec;
+
+		timeval_to_str(result, horodatage_result);
+
+		printf("requete retour :         %s temps : %s\n", requete_retour, horodatage_result);
 
 		//Extrait les infos reçues (adresses des serveurs de domaine)
 		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
-			printf("Site inexistant\n");		
+			printf("Site inexistant\n");	
+			fprintf(log, "Site inexistant\n");	
 			continue;
 		}
 		
@@ -129,8 +144,8 @@ int main(int argc, char const *argv[])
 
 	//DEBUT ECHANGE AVEC SOUS_DOMAINE_RESOLVER (SERVEURS DOMAINES) ---------------------
 		memset(requete_retour, '\0', BUFFSIZE);
-    	memset(horodatage, '\0', 11);
-    	gettimeofday(&start, NULL);
+		memset(horodatage, '\0', 11);
+		gettimeofday(&start, NULL);
 		timeval_to_str(start, horodatage);
 
 		if(i%2 == 0) //Tourniquet
@@ -150,11 +165,17 @@ int main(int argc, char const *argv[])
 
 		//Reçoit réponse de domaine
 		rcv(sockfd_reception, requete_retour); 
-		printf("requete retour :         %s\n", requete_retour);
+		gettimeofday(&end, NULL);
+		result.tv_sec = end.tv_sec - start.tv_sec;
+		result.tv_usec = end.tv_usec - start.tv_usec;
 
+		timeval_to_str(result, horodatage_result);
+
+		printf("requete retour :         %s temps : %s\n", requete_retour, horodatage_result);
 		//Extrait les infos reçues (adresses des serveurs de sous_domaine)
 		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
 			printf("Site inexistant\n");
+			fprintf(log, "Site inexistant\n");
 			continue;
 		}
 
@@ -165,8 +186,8 @@ int main(int argc, char const *argv[])
 	
 	//DEBUT ECHANGE AVEC MACHINE_RESOLVER (SERVEURS SOUS-DOMAINE) ----------------------
 		memset(requete_retour, '\0', BUFFSIZE);
-    	memset(horodatage, '\0', 11);
-    	gettimeofday(&start, NULL);
+		memset(horodatage, '\0', 11);
+		gettimeofday(&start, NULL);
 		timeval_to_str(start, horodatage);
 
 		if(i%2 == 0) //Tourniquet
@@ -186,11 +207,17 @@ int main(int argc, char const *argv[])
 
 		//Reçoit réponse de sous_domaine
 		rcv(sockfd_reception, requete_retour);
-		printf("requete retour :         %s\n", requete_retour);
+		gettimeofday(&end, NULL);
+		result.tv_sec = end.tv_sec - start.tv_sec;
+		result.tv_usec = end.tv_usec - start.tv_usec;
 
+		timeval_to_str(result, horodatage_result);
+
+		printf("requete retour :         %s temps : %s\n", requete_retour, horodatage_result);
 		//Extrait les infos reçues (adresses des serveurs de machines)
 		if(reponse_extract_serveur(requete_retour, tmp_server, 1) == -1){
 			printf("Site inexistant\n");
+			fprintf(log, "Site inexistant\n");
 			continue;
 		}
 
@@ -198,7 +225,7 @@ int main(int argc, char const *argv[])
 		id_transac++;
 
 	//FIN ECHANGE AVEC MACHINE_RESOLVER (SERVEURS SOUS-DOMAINE) ------------------------
-
+		fprintf(log, "%s\n", tmp_server[0].ip);
 		printf("\rRésolution : %s\n", tmp_server[0].ip);
 		printf("\n");
 	}
@@ -207,8 +234,11 @@ int main(int argc, char const *argv[])
 	gettimeofday(&end, NULL);
 	printf("TEMPS : %ldms\n", ((end.tv_sec * 1000000 + end.tv_usec) - (total.tv_sec * 1000000 + total.tv_usec))/1000 );
 	
+	if(fclose(log) != 0)
+		raler("close log", 1);
+
 	free(req_tab);
-    exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 
 	return 0;
 }

@@ -397,7 +397,7 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 		resolve(receive, serv_resolution, taille, a_renvoyer, server_type);
 	
 		//Envoi
-		for(int x = 0; x < 600; x++){printf("OE\n");}
+		for(int x = 0; x < 600; x++){printf("~\n");}
 
 		sockfd_envoi = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
 		snd(sockfd_envoi, a_renvoyer, &client_addr);
