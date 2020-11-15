@@ -12,7 +12,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <sys/time.h>
-
+#include <sys/stat.h>
 
 #define BUFFSIZE 255
 #define EXIT_FAILS 255
@@ -57,9 +57,9 @@ void resolve(char *, struct serveur *, int , char *, int);
 
 
 //FONCTIONS UNIQUEMENT POUR CLIENT
-int nb_lignes(char *);
-void sitelist_from_file(char *, struct requete *, int);
-int init_client(struct requete **);
+int nb_lignes(const char *);
+void sitelist_from_file(const char *, struct requete *, int);
+int init_client(struct requete **, const char *);
 void timeval_to_str(struct timeval , char *);
 void client_request_maker(char *, int , char *, char *);
 int reponse_extract_serveur(char *, struct serveur *, int);

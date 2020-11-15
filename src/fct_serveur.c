@@ -3,7 +3,21 @@
 #endif
 
 
+
+
+/**************************************************************************/
+/* 						Variables globales                                */
+/**************************************************************************/
+
 socklen_t addrlen = sizeof(struct sockaddr_in6);
+
+
+
+
+
+/**************************************************************************/
+/* 						Fonctions Générales                               */
+/**************************************************************************/
 
 /* Fonction : Traiter les erreurs 
  * Arguments : 
@@ -13,12 +27,14 @@ socklen_t addrlen = sizeof(struct sockaddr_in6);
  */
 void raler(char *msg, int perror_isset)
 {
-	fprintf(stderr, "%s\n", msg);
 	if (perror_isset)
 		perror(msg);
+	else
+		fprintf(stderr, "%s\n", msg);
 
+/*
 	FILE* fichier = NULL;
-	if((fichier = fopen("log.err", "w")) == NULL){
+	if((fichier = fopen("log", "w")) == NULL){
 		perror(msg);
 		exit(EXIT_FAILURE);
 	}
@@ -29,7 +45,7 @@ void raler(char *msg, int perror_isset)
 		perror(msg);
 		exit(EXIT_FAILURE);
 	}
-
+*/
 	exit(EXIT_FAILURE);
 }
 
@@ -45,7 +61,6 @@ void ipv4toipv6(char *ipv4, char *ipv6)
 {
 	strncpy(ipv6, "::FFFF:", 7);
 	strncpy(&ipv6[7], ipv4, 16);
-	//printf("IPV4 TO IPV6%s\n", ipv6);
 }
 
 
@@ -97,14 +112,10 @@ int init_socket(struct sockaddr_in6 *address, long int port, char *txt_addr, int
  */
 void rcv(int sockfd, char *storage)
 {
-	//char buf[BUFFSIZE];
 	int nb_octets;
 
-	//memset(buf, '\0', BUFFSIZE);
 	if((nb_octets = recvfrom(sockfd, storage, BUFFSIZE, 0, NULL, NULL)) == -1)
 		raler("recvfrom", 1);
-
-	//printf("processus %d, message recu : %s\n",getpid(), storage);
 
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
@@ -120,6 +131,7 @@ void rcv(int sockfd, char *storage)
 void snd(int sockfd, char *msg, struct sockaddr_in6 *dest_adr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
+
 	if(sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *) dest_adr, addrlen) == -1)
 			raler("sendto", 1);
 
@@ -140,15 +152,13 @@ int element_from_file(FILE *fichier, char* storage)
 	int c, i = 0;
 	while(1){
 		c = fgetc(fichier);
-		//printf("fgetc : %c\n", c);
+
 		if(c == EOF || c == '|' || c == '\n'){
 			storage[i] = '\0';
-			//printf("		récuperé : %s| i = %d\n", storage, i);
 			return c;
 		}
 
 		if(!(c == '.' && i == 0)){
-			//printf("j'écris : %c\n", c);
 			storage[i] = c;
 			i++;
 		}
@@ -176,13 +186,14 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, 
 		while(test != '\n'){
 			memset(buf, '\0', 100);
 			test = element_from_file(fichier, buf);
-			//printf(" server_from_file a récuperé : %s | dernier char : %c\n", buf, test);
-			if(test == '|' &&  isnewline && !isclient) // détecte un nom
+
+			if(test == '|' &&  isnewline && !isclient) //détecte un nom
 				strncpy(serv_tab[i].nom, buf, 99);
-			if(test == '|' && buf[0] != '.') // détecte une adresse ip
+			if(test == '|' && buf[0] != '.') //détecte une adresse ip
 				strncpy(serv_tab[i].ip, buf, 39);
 			if(test == '\n') //détecte un numéro de port
 				serv_tab[i].port = atoi(buf);
+			
 			isnewline = 0;
 		}
 		isnewline = 1;
@@ -203,7 +214,7 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, 
 void domain_from_request(char* storage, char *request, int type)
 {
 	int repere = 2, i = 0, j = 0;
-	//printf("TYPE : %d\n", type);
+
 	while(repere){
 		if(request[i] == '|')
 			repere--;
@@ -299,33 +310,27 @@ void horodatage_from_request(char* storage, char *request)
  */
 void resolve(char *brut_request, struct serveur *serv_resolution, int taille, char *solution, int server_type)
 {
-	char id_transac[11];//1
-	char horodatage[11];//2
-	char nom[BUFFSIZE];//3
-	int code = -1;//4
-	//5
+	int code = -1;
+	
+	char id_transac[11];
+	char horodatage[11];
+	char nom[BUFFSIZE];
 	char triplet1[BUFFSIZE];//solution1
 	char triplet2[BUFFSIZE];//solution2
-	//memset(triplet1, '\0', BUFFSIZE);
-	//memset(triplet2, '\0', BUFFSIZE);
-	//memset(id_transac, '\0', 11);
-	//memset(horodatage, '\0', 11);
-	//memset(a_resoudre, '\0', BUFFSIZE);
-
 	char a_resoudre[11];
 
 	struct serveur solution1;
 	struct serveur solution2;
+
 	memset(solution1.nom, '\0', 100);
 	memset(solution2.nom, '\0', 100);
-	idtransac_from_request(id_transac, brut_request);//1
-	horodatage_from_request(horodatage, brut_request);//2
-	nom_from_request(nom, brut_request);//3
 
-	domain_from_request(a_resoudre, brut_request, server_type);//pour 5
+	idtransac_from_request(id_transac, brut_request);
+	horodatage_from_request(horodatage, brut_request);
+	nom_from_request(nom, brut_request);
+	domain_from_request(a_resoudre, brut_request, server_type);
 
 	for(int i = 0; i < taille; i++){
-		//printf("a resoudre : %s\nsolution : %s\n",a_resoudre, serv_resolution[i].nom);
 
 		if(strcmp(serv_resolution[i].nom, a_resoudre) == 0){//si on trouve la resolution
 			if(solution1.nom[0] == '\0'){//si s1 vide ecrire dedans sinon ecrire dans s2
@@ -371,7 +376,7 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 {	
 
 	char receive[BUFFSIZE];
-	int sockfd_envoi, sockfd_reception, sockfd_ack;
+	int sockfd_envoi, sockfd_reception;
 	struct sockaddr_in6 my_addr, client_addr;
 	char a_renvoyer[BUFFSIZE];
 	char ack[2];
@@ -381,17 +386,17 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 		memset(receive, '\0', BUFFSIZE);
 		memset(a_renvoyer, '\0', BUFFSIZE);
 		memset(ack, '\0', 2);
-		// Initialisation - Reception - Fermeture ---------------------------------
+
+		//Reception
 		sockfd_reception = init_socket(&my_addr, port, adresse, 1);	
 		rcv(sockfd_reception, receive);
 		if(receive[0] == '!')
 			exit(EXIT_SUCCESS);
 
-		//RECUPERER NOM A RESOUDRE + RESOUDRE + FORMER REPONSE
+		//Resolution
 		resolve(receive, serv_resolution, taille, a_renvoyer, server_type);
 	
-		// Initialisation - Envoi - Fermeture ---------------------------------
-
+		//Envoi
 		for(int x = 0; x < 600; x++){printf("OE\n");}
 
 		sockfd_envoi = init_socket(&client_addr, CLIENT_PORT, CLIENT_ADDR, 0);
@@ -423,7 +428,9 @@ void n_wait(int n){
 
 
 
-//FONCTIONS UNIQUEMENT POUR CLIENT
+/**************************************************************************/
+/* 						Fonctions Client                                  */
+/**************************************************************************/
 
 
 /* Fonction : Compter le nombre de sites à résoudre
@@ -431,7 +438,7 @@ void n_wait(int n){
  * 		- filename = fichier contenant les sites à résoudre
  * Retour : Nombre de sites à résoudre
  */
-int nb_lignes(char *filename)
+int nb_lignes(const char *filename)
 {
 	int c;
 	int nb_line = 0;
@@ -459,7 +466,7 @@ int nb_lignes(char *filename)
  *		- nb_requete = nombre de sites à résoudre
  * Retour : rien
  */
-void sitelist_from_file(char *filename, struct requete *req_tab, int nb_requete)
+void sitelist_from_file(const char *filename, struct requete *req_tab, int nb_requete)
 {
 	char buf[100];
 	int i = 0, j = 0;
@@ -493,14 +500,14 @@ void sitelist_from_file(char *filename, struct requete *req_tab, int nb_requete)
  * 		- tab = tableau dans lequel mettre les noms à résoudre
  * Retour : rien
  */
-int init_client(struct requete **tab)
+int init_client(struct requete **tab, const char* filename)
 {
-	int nb_sites = nb_lignes("./lists/sites_a_resoudre");
+	int nb_sites = nb_lignes(filename);
 	(*tab) = malloc(nb_sites*sizeof(struct requete));
 	if(tab == NULL)
 		raler("malloc requetes", 1);
 
-	sitelist_from_file("./lists/sites_a_resoudre", (*tab), nb_sites);
+	sitelist_from_file(filename, (*tab), nb_sites);
 	return nb_sites;
 }
 
@@ -541,8 +548,9 @@ int reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachin
 {
 	int repere = 4, i = 0, j = 0;
 	char port[6];
-
-	while(repere-1){ //avance jusqu'au code
+	
+	//avance jusqu'au code et return -1 si code == 0
+	while(repere-1){ 
 		if(reponse[i] == '|')
 			repere--;
 		i++;
@@ -550,14 +558,18 @@ int reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachin
 	if(reponse[i] == '0')
 		return -1;
 
-	while(repere){ //avance jusqu'au premier triplet
+	//avance jusqu'au premier triplet
+	while(repere){ 
 		if(reponse[i] == '|')
 			repere--;
 		i++;
 	}
 
-	for(int n = 0; n < 2; n++){
-		while(reponse[i] != ','){//recupere le nom du serveur
+	
+	for(int n = 0; n < 2; n++){ //pour maximum 2 solutions
+
+		//recupere le nom du serveur
+		while(reponse[i] != ','){
 			storage[n].nom[j] = reponse[i];
 			i++;
 			j++;
@@ -565,8 +577,8 @@ int reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachin
 		storage[n].nom[j] = '\0';	
 		i++;
 		j = 0;
-	
-		while(reponse[i] != ','){//recupere l'ip du serveur
+		//recupere l'ip du serveur
+		while(reponse[i] != ','){
 			storage[n].ip[j] = reponse[i];
 			i++;
 			j++;
@@ -574,7 +586,8 @@ int reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachin
 		storage[n].ip[j] = '\0';	
 		i++;
 		j = 0;
-		//printf("nom : %s\nip :  %s\n", storage[n].nom, storage[n].ip);
+		
+		//recupere le port du serveur
 		while( (reponse[i] != '|' && n == 0 && !ismachine) || (reponse[i] != '\0' && n == 1) || (reponse[i] != '\0' && ismachine)){//recupere le port du serveur
 			port[j] = reponse[i];
 			i++;

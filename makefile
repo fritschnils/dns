@@ -32,5 +32,8 @@ init_ip:
 	sudo ip -force addr add 192.168.0.137/24 dev wlp3s0 #processus server .b.com
 	sudo ip -force addr add 192.168.0.138/24 dev wlp3s0 #processus server .b.com
 
-test:
-	bash ./test.sh
+test-robustesse:
+	bash ./test/test_scripts/test_robustesse.sh
+
+test-quantite:
+	bash ./test/test_scripts/test_quantite.sh
