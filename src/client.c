@@ -109,6 +109,7 @@ int main(int argc, char const *argv[])
 
 		//Crée requête
 		client_request_maker(req_tab[i].req, id_transac, horodatage, req_tab[i].nom); 
+		fprintf(log, "%s -> ", req_tab[i].nom);	
 
 		//Envoi requête à racine
 		printf("envoie a racine :        %s\n", req_tab[i].req);
