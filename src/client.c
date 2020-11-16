@@ -88,7 +88,6 @@ int main(int argc, char const *argv[])
 	if((log = fopen("log", "w")) == NULL)
 		raler("open log", 1);
 
-	fprintf(log, "eddzzefz\n");
 
 /**************************************************************************/
 /* Lancement de la résolution des requêtes une par une                    */
@@ -129,7 +128,7 @@ int main(int argc, char const *argv[])
 		printf("requete retour :         %s temps : %s\n", requete_retour, horodatage_result);
 
 		//Extrait les infos reçues (adresses des serveurs de domaine)
-		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
+		if(server_from_reponse(requete_retour, tmp_server, 0) == -1){
 			printf("Site inexistant\n");	
 			fprintf(log, "Site inexistant\n");	
 			continue;
@@ -173,7 +172,7 @@ int main(int argc, char const *argv[])
 
 		printf("requete retour :         %s temps : %s\n", requete_retour, horodatage_result);
 		//Extrait les infos reçues (adresses des serveurs de sous_domaine)
-		if(reponse_extract_serveur(requete_retour, tmp_server, 0) == -1){
+		if(server_from_reponse(requete_retour, tmp_server, 0) == -1){
 			printf("Site inexistant\n");
 			fprintf(log, "Site inexistant\n");
 			continue;
@@ -215,7 +214,7 @@ int main(int argc, char const *argv[])
 
 		printf("requete retour :         %s temps : %s\n", requete_retour, horodatage_result);
 		//Extrait les infos reçues (adresses des serveurs de machines)
-		if(reponse_extract_serveur(requete_retour, tmp_server, 1) == -1){
+		if(server_from_reponse(requete_retour, tmp_server, 1) == -1){
 			printf("Site inexistant\n");
 			fprintf(log, "Site inexistant\n");
 			continue;

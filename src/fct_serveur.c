@@ -32,24 +32,15 @@ void raler(char *msg, int perror_isset)
 	else
 		fprintf(stderr, "%s\n", msg);
 
-/*
-	FILE* fichier = NULL;
-	if((fichier = fopen("log", "w")) == NULL){
-		perror(msg);
-		exit(EXIT_FAILURE);
-	}
-
-	fprintf(fichier, "%s\n", msg);
-
-	if(fclose(fichier) != 0){
-		perror(msg);
-		exit(EXIT_FAILURE);
-	}
-*/
 	exit(EXIT_FAILURE);
 }
 
 
+/* Fonction : Savoir si une adresse est ipV4 
+ * Arguments : 
+ *		- adresseip = l'adresses ip testée
+ * Retour : 0 si ipv6, sinon c'est ipv4
+ */
 int is_ipv4(char *adresseip)
 {
     struct sockaddr_in sa;
@@ -57,12 +48,18 @@ int is_ipv4(char *adresseip)
     return result != 0;
 }
 
+
+/* Fonction : Mapper une ipv4 en ipv6
+ * Arguments : 
+ * 		- ipv4 = ip à convertir
+ *		- ipv6 = ip convertie
+ * Retour : rien
+ */
 void ipv4toipv6(char *ipv4, char *ipv6)
 {
 	strncpy(ipv6, "::FFFF:", 7);
 	strncpy(&ipv6[7], ipv4, 16);
 }
-
 
 
 /* Fonction : Initialiser une socket 
@@ -105,9 +102,11 @@ int init_socket(struct sockaddr_in6 *address, long int port, char *txt_addr, int
 	return sockfd;
 }
 
+
 /* Fonction : Attendre message sur une socket
  * Arguments : 
  * 		- sockfd = socket sur laquelle attendre
+ *		- storage = message reçu
  * Retour : rien
  */
 void rcv(int sockfd, char *storage)
@@ -120,6 +119,7 @@ void rcv(int sockfd, char *storage)
 	if((close(sockfd)) == -1)
 		raler("close", 1);	
 }
+
 
 /* Fonction : Envoyer un message
  * Arguments : 
@@ -165,6 +165,7 @@ int element_from_file(FILE *fichier, char* storage)
 	}
 }
 
+
 /* Fonction : Charger un fichier-liste de serveurs dans un tableau de serveurs.
  * Arguments : 
  * 		- filename = fichier dans lequel chercher les serveurs
@@ -204,6 +205,7 @@ void servers_from_file(char *filename, struct serveur *serv_tab, int nb_lignes, 
 		raler("fclose", 1);
 }
 
+
 /* Fonction : Extraire de la requete, la partie du nom à résoudre
  * Arguments : 
  * 		- storage = string où stocker la partie du nom à résoudre extraite
@@ -235,6 +237,7 @@ void domain_from_request(char* storage, char *request, int type)
 	storage[j] = '\0';
 }
 
+
 /* Fonction : Extraire la partie nom de la requete
  * Arguments : 
  * 		- storage = string où stocker le nom extrait
@@ -258,6 +261,7 @@ void nom_from_request(char* storage, char *request)
 	storage[j] = '\0';
 }
 
+
 /* Fonction : Extraire la partie id-transaction de la requete
  * Arguments : 
  * 		- storage = string où stocker l'id-transaction extrait
@@ -273,6 +277,7 @@ void idtransac_from_request(char* storage, char *request)
 	}
 	storage[i] = '\0';
 }
+
 
 /* Fonction : Extraire la partie horodatage de la requete
  * Arguments : 
@@ -366,10 +371,14 @@ void resolve(char *brut_request, struct serveur *serv_resolution, int taille, ch
 	return;
 }
 
+
 /* Fonction : Attendre une requête de client et y répondre
  * Arguments : 
  * 		- port = port sur lequel attendre la requête
  *		- adresse = adresse sur laquelle attendre la requête
+ *		- serv_resolution = liste des solutions de résolution
+ *		- taille = nombre des solutions de résolution
+ *		- server_type = type du serveur appelant (0=domaine_resolver, 1=sous-domaine_resolver ou 2=machine_resolver)
  * Retour : rien
  */
 void request_process(int port, char *adresse, struct serveur *serv_resolution, int taille, int server_type)
@@ -404,6 +413,7 @@ void request_process(int port, char *adresse, struct serveur *serv_resolution, i
 		printf("envoi à client : %s\n", a_renvoyer);
 	}
 }
+
 
 /* Fonction : Attendre n processus
  * Arguments : 
@@ -458,7 +468,6 @@ int nb_lignes(const char *filename)
 }
 
 
-
 /* Fonction : Charger un fichier de sites à résoudre dans un tableau
  * Arguments : 
  * 		- filename = fichier contenant les sites à résoudre
@@ -495,9 +504,11 @@ void sitelist_from_file(const char *filename, struct requete *req_tab, int nb_re
 		raler("fclose", 1);
 }
 
+
 /* Fonction : Initialise les requetes initiales du client
  * Arguments : 
  * 		- tab = tableau dans lequel mettre les noms à résoudre
+ *		- filename = nom du fichier à ouvrir
  * Retour : rien
  */
 int init_client(struct requete **tab, const char* filename)
@@ -511,6 +522,7 @@ int init_client(struct requete **tab, const char* filename)
 	return nb_sites;
 }
 
+
 /* Fonction : Convertir struct timeval en string de longueur 10
  * Arguments : 
  * 		- start = timeval à convertir
@@ -522,6 +534,7 @@ void timeval_to_str(struct timeval start, char *str)
     int nombre = start.tv_sec + start.tv_usec;
     sprintf(str, "%d%c", nombre, '\0');
 }
+
 
 /* Fonction : Fabriquer la requete client sous forme de string
  * Arguments : 
@@ -544,7 +557,7 @@ void client_request_maker(char *storage, int id_transac, char *horodatage, char 
  *		- ismachine = (=true si c'est une reponse d'un machine_resolver) (=false sinon)
  * Retour : 1 si ok, -1 si site non trouvé (code == 0)
  */
-int reponse_extract_serveur(char *reponse, struct serveur *storage, int ismachine)
+int server_from_reponse(char *reponse, struct serveur *storage, int ismachine)
 {
 	int repere = 4, i = 0, j = 0;
 	char port[6];
