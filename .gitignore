@@ -2,3 +2,4 @@ domaine
 client
 bin/
 log
+*.pdf

@@ -1,19 +1,34 @@
-# Simulateur de DNS
+# Préparer les adresses IP
 
-
-## Utilisation
-
-- préparer les aresses ip : 
+1. Allez dans le makefile et entrez à la première ligne le nom de votre interface réseau à la place de "wlp3s0". Sauvegardez.
+2. Entrez la commande suivante dans le terminal.
 ```console
 make init_ip
 ```
-- compilier avec commande : make 
-- lancer les serveurs avec : make test
 
-## Fonctionnalités
+# Compiler
+Entrez la commande suivante dans le terminal
+```console
+make
+```
 
-**Utilisation généralisée d'adresses ipv4 et ipv6. Serveurs joignables en ipv4 et ipv6** </br>
-Passage des structures sockaddr_in en sockaddr_in6, AF_INET en PF_INET6(création socket) et AF_INET6(address familiy)
-Passage des ipv4 de la forme X.X.X.X en ipv6 de la forme ::FFFF:X.X.X.X appelé *ipv4 mapped ipv6*
-
-## Remarques
+# Lancer les tests
+##### Test de robustesse : Différents noms à résoure avec fautes de syntaxe pour voir si le programme les détecte et quand.
+En entrée : Un fichier contenant des noms tous non-valides.
+Résultat : Dans le fichier log, le retour du client. Normalement tous les noms sont inexistants.
+Remarque : Si vous voulez tester d'autres entrées, ajoutez les au fichier test/test_files/robustesse
+```console
+make test-robustesse
+```
+##### Test de quantité : Mélange de plusieurs noms valides et non-valides pour voir si le programme se comporte bien.
+En entrée : Un fichier contenant beaucoup de noms valides et non-valides
+Résultat : Dans le fichier log, le retour du client.
+Remarque : Si vous voulez tester d'autres entrées, ajoutez les au fichier test/test_files/quantite
+```console
+make test-quantite
+```
+# Fin des Tests
+Lancez cette commande pour enlever de votre interface les adresses utilisées
+```console
+    sudo service network-manager restart #pour remettre à zero
+```
